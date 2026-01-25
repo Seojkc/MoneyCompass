@@ -1,0 +1,32 @@
+.month-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.month-card {
+  min-width: 220px;
+  padding: 20px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+  color: black;
+}
+
+.nav-btn {
+  font-size: 20px;
+  border: none;
+  background: #222;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.nav-btn:hover {
+  opacity: 0.8;
+}
