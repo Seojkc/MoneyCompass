@@ -14,12 +14,26 @@ type Props = {
 };
 
 export default function ExpensePieChart({ selectedDate }: Props) {
+
+
+    const MIN_RADIUS = 75;
+    const MAX_RADIUS = 100;
+
+    const getRadius = (value: number) => {
+    const maxValue = Math.max(...data.map(d => d.value));
+    const normalized = value / maxValue;
+
+    return MIN_RADIUS + normalized * (MAX_RADIUS - MIN_RADIUS);
+    };
+
+
+
   // 🔹 Random temp data (replace later with API)
   const data: PieItem[] = [
-    { category: "Rent", value: 40, color: "#3b82f6" },
-    { category: "Food", value: 25, color: "#ef4444" },
-    { category: "Travel", value: 20, color: "#22c55e" },
-    { category: "Other", value: 15, color: "#f59e0b" },
+    { category: "Rent", value: 40, color: "#00358a" },
+    { category: "Food", value: 25, color: "#8b0000" },
+    { category: "Travel", value: 20, color: "#007a2d" },
+    { category: "Other", value: 15, color: "#976000" },
   ];
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
@@ -69,15 +83,40 @@ export default function ExpensePieChart({ selectedDate }: Props) {
 
       <div className="pie-content">
         <svg width="220" height="220" viewBox="0 0 220 220">
-          {slices.map((slice, i) => (
-            <path
-              key={i}
-              d={describeArc(110, 110, 100, slice.startAngle, slice.startAngle + slice.sliceAngle)}
-              fill={slice.color}
-            />
-          ))}
-          <circle cx="110" cy="110" r="35" fill="#222" />
+            <defs>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+                    <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+
+            {slices.map((slice, i) => (
+            <g key={i}>
+                <path
+                d={describeArc(110, 110, getRadius(slice.value), slice.startAngle, slice.startAngle + slice.sliceAngle)}
+                fill="none"
+                stroke={slice.color}
+                strokeWidth="6"
+                opacity="0.25"
+                filter="url(#glow)"
+                />
+                <path
+                d={describeArc(110, 110, getRadius(slice.value), slice.startAngle, slice.startAngle + slice.sliceAngle)}
+                fill="none"
+                stroke={slice.color}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                />
+            </g>
+            ))}
+
+            <circle cx="110" cy="110" r="30" fill="#ffffff70" />
+            <circle cx="110" cy="110" r="28" fill="#000000" />
         </svg>
+
 
         <div className="pie-legend">
           {data.map((item, i) => (
