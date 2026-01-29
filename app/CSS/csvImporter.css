@@ -49,3 +49,134 @@
   transform: translateY(-1px);
   box-shadow: 0 6px 14px rgba(34,197,94,.4);
 }
+
+
+.csv-modal-backdrop{
+  position:fixed; inset:0;
+  background: rgba(0,0,0,.65);
+  display:flex; align-items:center; justify-content:center;
+  z-index:9999;
+}
+
+.csv-modal{
+  width:min(1100px,94vw);
+  max-height:86vh;
+  background:#0f0f12;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.55);
+}
+
+.csv-modal-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.csv-close{
+  background:transparent;
+  border:none;
+  color:#fff;
+  font-size:18px;
+  cursor:pointer;
+  opacity:.85;
+}
+.csv-close:hover{opacity:1;}
+
+.csv-table-wrap{
+  padding:12px 14px;
+  overflow:auto;
+  max-height:60vh;
+}
+
+.csv-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+
+.csv-table th, .csv-table td{
+  border-bottom:1px solid rgba(255,255,255,.08);
+  padding:10px 8px;
+  color:rgba(255,255,255,.92);
+}
+
+.csv-table th{
+  position:sticky;
+  top:0;
+  background:#111118;
+  z-index:1;
+  text-align:left;
+  font-weight:800;
+}
+
+.csv-input{
+  width:100%;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  color:#fff;
+  border-radius:10px;
+  padding:8px 10px;
+  outline:none;
+}
+
+.type-pill{
+  border:none;
+  padding:8px 10px;
+  border-radius:999px;
+  cursor:pointer;
+  font-weight:800;
+}
+
+.type-pill.income{
+  background:rgba(34,197,94,.18);
+  color:#22c55e;
+  border:1px solid rgba(34,197,94,.35);
+}
+
+.type-pill.expense{
+  background:rgba(239,68,68,.16);
+  color:#ef4444;
+  border:1px solid rgba(239,68,68,.35);
+}
+
+.delete-minus{
+  border:none;
+  background:rgba(255,255,255,.06);
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  cursor:pointer;
+}
+.delete-minus:hover{
+  background:rgba(239,68,68,.18);
+  color:#ef4444;
+}
+
+.csv-modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  padding:12px 14px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.btn-secondary{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  color:#fff;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.btn-primary{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  border:none;
+  color:#fff;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:900;
+}
