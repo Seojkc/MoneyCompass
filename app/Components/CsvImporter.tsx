@@ -22,6 +22,9 @@ export default function CsvImporter({ onData }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [draftRows, setDraftRows] = useState<ImportedRow[]>([]);
 
+  
+
+
   const CATEGORY_MAP: Record<string, string[]> = {
     Travel: ["uber","lyft","taxi","cab","airbnb","expedia","booking","flight","westjet","air canada","gas","petro","shell","esso","parking","toll"],
     Groceries: ["walmart","costco","superstore","loblaws","nofrills","freshco","metro","sobeys","whole foods","food basics","grocery"],
@@ -37,6 +40,34 @@ export default function CsvImporter({ onData }: Props) {
     Entertainment: ["movie","cinema","theatre","imax","ticketmaster","steam","xbox","playstation"],
     Other: [],
   };
+  const EXPENSE_CATEGORIES = [
+    "Rent",
+    "Groceries",
+    "Food",
+    "Travel",
+    "Utilities",
+    "Shopping",
+    "Health",
+    "Subscriptions",
+    "Insurance",
+    "Education",
+    "Entertainment",
+    "Transfer",
+    "Other",
+  ];
+
+  const INCOME_CATEGORIES = [
+    "Salary",
+    "Business",
+    "Freelance",
+    "Interest",
+    "Refund",
+    "Gift",
+    "Investment",
+    "Transfer",
+    "Other",
+  ];
+
 
   const makeId = () =>
     (typeof crypto !== "undefined" && "randomUUID" in crypto)
@@ -175,9 +206,25 @@ export default function CsvImporter({ onData }: Props) {
     setDraftRows(prev => prev.map(r => (r.id === id ? { ...r, ...patch } : r)));
   };
 
+
   const toggleType = (id: string) => {
-    setDraftRows(prev => prev.map(r => (r.id === id ? { ...r, amount: r.amount * -1 } : r)));
+    setDraftRows(prev =>
+      prev.map(r => {
+        if (r.id !== id) return r;
+
+        const wasExpense = r.amount < 0;
+
+        return {
+          ...r,
+          amount: r.amount * -1,
+          category: wasExpense ? "Salary" : "Other",
+        };
+      })
+    );
   };
+
+
+  
 
   const deleteRow = (id: string) => {
     setDraftRows(prev => prev.filter(r => r.id !== id));
@@ -223,12 +270,13 @@ export default function CsvImporter({ onData }: Props) {
               <table className="csv-table">
                 <thead>
                   <tr>
+                    <th>➖</th>
                     <th>Type</th>
                     <th>Date</th>
                     <th>Name</th>
                     <th>Category</th>
                     <th>Amount</th>
-                    <th>➖</th>
+                    
                   </tr>
                 </thead>
 
@@ -243,6 +291,12 @@ export default function CsvImporter({ onData }: Props) {
                     draftRows.map(r => (
                       <tr key={r.id}>
                         <td>
+                          <button className="delete-minus" onClick={() => deleteRow(r.id)}>
+                            ➖
+                          </button>
+                        </td>
+
+                        <td>
                           <button
                             className={`type-pill ${r.amount >= 0 ? "income" : "expense"}`}
                             onClick={() => toggleType(r.id)}
@@ -253,7 +307,7 @@ export default function CsvImporter({ onData }: Props) {
 
                         <td>
                           <input
-                            className="csv-input"
+                            className="csv-input csv-datepad"
                             type="date"
                             value={r.date}
                             onChange={e => updateRow(r.id, { date: e.target.value })}
@@ -262,23 +316,30 @@ export default function CsvImporter({ onData }: Props) {
 
                         <td>
                           <input
-                            className="csv-input"
+                            className="csv-input csv-name"
                             value={r.name}
                             onChange={e => updateRow(r.id, { name: e.target.value })}
                           />
                         </td>
 
                         <td>
-                          <input
-                            className="csv-input"
+                          <select
+                            className="csv-input csv-select"
                             value={r.category}
                             onChange={e => updateRow(r.id, { category: e.target.value })}
-                          />
+                          >
+                            {(r.amount < 0 ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).map(cat => (
+                              <option key={cat} value={cat}>
+                                {cat}
+                              </option>
+                            ))}
+                          </select>
                         </td>
+
 
                         <td>
                           <input
-                            className="csv-input"
+                            className="csv-input csv-numberpad"
                             type="number"
                             step="0.01"
                             value={Math.abs(r.amount)}
@@ -289,11 +350,7 @@ export default function CsvImporter({ onData }: Props) {
                           />
                         </td>
 
-                        <td>
-                          <button className="delete-minus" onClick={() => deleteRow(r.id)}>
-                            ➖
-                          </button>
-                        </td>
+                        
                       </tr>
                     ))
                   )}

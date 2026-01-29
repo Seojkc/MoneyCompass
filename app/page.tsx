@@ -1,6 +1,5 @@
 'use client';
 
-import Image from "next/image";
 import "./CSS/Dashboard.css";
 import { useState } from "react";
 import MonthCard from "./Components/MonthSliderCard";
@@ -10,13 +9,12 @@ import IncomeExpenseTable from "./Components/IncomeExpenseTable";
 import ExpensePieChart from "./Components/ExpensePieChart";
 import CsvImporter, { ImportedRow } from "./Components/CsvImporter";
 
-
-
 type Transaction = {
   type: "income" | "expense";
   category: string;
   amount: number;
 };
+
 type Entry = {
   id: string;
   type: "income" | "expense";
@@ -26,27 +24,39 @@ type Entry = {
   date: Date;
 };
 
-
 export default function Home() {
-
-
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
-  const [rows, setRows] = useState<ImportedRow[]>([]);
 
+  const makeId = () =>
+    (typeof crypto !== "undefined" && "randomUUID" in crypto)
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-  const addTransaction = (type: "income" | "expense", category: string, amount: number) => {
+  // ✅ QuickAdd should update BOTH: transactions (for last used) AND entries (for table)
+  const addQuickEntry = (type: "income" | "expense", category: string, amount: number) => {
     setTransactions(prev => [...prev, { type, category, amount }]);
+
+    const today = new Date();
+    // keep "today" clean (no timezone surprises in UI)
+    const dateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const newEntry: Entry = {
+      id: makeId(),
+      type,
+      name: "QuickEntry",
+      category,
+      amount: Math.abs(amount),
+      date: dateOnly,
+    };
+
+    setEntries(prev => [newEntry, ...prev]); // put latest at top
   };
 
-  const deleteTransaction = (index: number) => {
-    setTransactions(prev => prev.filter((_, i) => i !== index));
-  };
   const deleteEntry = (id: string) => {
     setEntries(prev => prev.filter(e => e.id !== id));
   };
-
 
   const handleCsvData = (rows: ImportedRow[]) => {
     const converted: Entry[] = rows.map(r => {
@@ -62,71 +72,58 @@ export default function Home() {
       };
     });
 
-    setEntries(prev => [...prev, ...converted]);
+    setEntries(prev => [...converted, ...prev]);
   };
 
+  // Last used categories
+  const lastIncomeCategory =
+    [...transactions].filter(t => t.type === "income").map(t => t.category).pop() || "Salary";
 
-
-  // Last used categories (optional)
-  const lastIncomeCategory = [...transactions]
-    .filter(t => t.type === "income")
-    .map(t => t.category)
-    .pop() || "Salary";
-
-  const lastExpenseCategory = [...transactions]
-    .filter(t => t.type === "expense")
-    .map(t => t.category)
-    .pop() || "Food";
-
-
+  const lastExpenseCategory =
+    [...transactions].filter(t => t.type === "expense").map(t => t.category).pop() || "Food";
 
   return (
     <div className="">
       <h1 className="main-heading">Dashboard</h1>
 
-    <div className="firstpart-container">
-      <MonthCard onChange={setSelectedMonth} />
-      <FinanceCards selectedDate={selectedMonth} />
-    </div>
+      <div className="firstpart-container">
+        <MonthCard onChange={setSelectedMonth} />
+        <FinanceCards selectedDate={selectedMonth} entries={entries} />
+      </div>
 
-    <div className="secondpart-container">
-      <div className="quick-add-container">
-        <QuickAddEntry
-          type="income"
-          lastUsedCategory={lastIncomeCategory}
-          onAdd={(cat, amt) => addTransaction("income", cat, amt)}
-        />
+      <div className="secondpart-container">
+        <div className="quick-add-container">
+          <QuickAddEntry
+            type="income"
+            lastUsedCategory={lastIncomeCategory}
+            onAdd={(cat, amt) => addQuickEntry("income", cat, amt)}
+          />
 
-        <QuickAddEntry
-          type="expense"
-          lastUsedCategory={lastExpenseCategory}
-          onAdd={(cat, amt) => addTransaction("expense", cat, amt)}
-        />
+          <QuickAddEntry
+            type="expense"
+            lastUsedCategory={lastExpenseCategory}
+            onAdd={(cat, amt) => addQuickEntry("expense", cat, amt)}
+          />
 
-        <CsvImporter onData={handleCsvData} />
+          <CsvImporter onData={handleCsvData} />
 
+          <ExpensePieChart selectedDate={selectedMonth} entries={entries} />
+        </div>
 
-        <ExpensePieChart selectedDate={selectedMonth} />
+        <div className="TransactionTable-container">
+          <IncomeExpenseTable
+            title="Income"
+            entries={entries.filter(e => e.type === "income")}
+            onDelete={deleteEntry}
+          />
 
-    </div>
-    <div className="TransactionTable-container">
-      <IncomeExpenseTable
-        title="Income"
-        entries={entries.filter(e => e.type === "income")}
-        onDelete={deleteEntry}
-      />
-
-      <IncomeExpenseTable
-        title="Expense"
-        entries={entries.filter(e => e.type === "expense")}
-        onDelete={deleteEntry}
-      />
-
-    </div>
-    </div>
-    
-      
-
+          <IncomeExpenseTable
+            title="Expense"
+            entries={entries.filter(e => e.type === "expense")}
+            onDelete={deleteEntry}
+          />
+        </div>
+      </div>
     </div>
   );
 }

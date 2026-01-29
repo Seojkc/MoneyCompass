@@ -3,6 +3,15 @@
 import React, { useMemo, useEffect, useState } from "react";
 import "../CSS/PieChart.css";
 
+type Entry = {
+  id: string;
+  type: "income" | "expense";
+  name: string;
+  category: string;
+  amount: number; // positive in your entries
+  date: Date;
+};
+
 export type PieItem = {
   category: string;
   value: number;
@@ -11,33 +20,57 @@ export type PieItem = {
 
 type Props = {
   selectedDate: Date;
+  entries: Entry[];
 };
 
-export default function ExpensePieChart({ selectedDate }: Props) {
+export default function ExpensePieChart({ selectedDate, entries }: Props) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // 🔹 Static temp data (replace later with real data)
-  const data: PieItem[] = [
-    { category: "Rent", value: 40, color: "#00358a" },
-    { category: "Food", value: 25, color: "#8b0000" },
-    { category: "Travel", value: 20, color: "#007a2d" },
-    { category: "Other", value: 15, color: "#976000" },
-  ];
+  // ✅ Build expense totals by category for selected month/year
+  const data: PieItem[] = useMemo(() => {
+    const month = selectedDate.getMonth();
+    const year = selectedDate.getFullYear();
 
-  const total = data.reduce((sum, item) => sum + item.value, 0);
+    const totals = new Map<string, number>();
+
+    for (const e of entries) {
+      if (e.type !== "expense") continue;
+      const d = e.date;
+      if (d.getMonth() !== month || d.getFullYear() !== year) continue;
+
+      const cat = e.category || "Other";
+      totals.set(cat, (totals.get(cat) ?? 0) + (e.amount ?? 0));
+    }
+
+    // Convert to array sorted by biggest first
+    const arr = Array.from(totals.entries())
+      .map(([category, value]) => ({
+        category,
+        value,
+        color: colorFromCategory(category),
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    // If no expense data, show a friendly placeholder slice
+    if (arr.length === 0) {
+      return [{ category: "No Expenses", value: 1, color: "#444" }];
+    }
+
+    return arr;
+  }, [entries, selectedDate]);
+
+  const total = data.reduce((sum, item) => sum + item.value, 0) || 1;
 
   const slices = useMemo(() => {
     let cumulative = 0;
-
     return data.map(item => {
       const startAngle = (cumulative / total) * 360;
       const sliceAngle = (item.value / total) * 360;
       cumulative += item.value;
-
       return { ...item, startAngle, sliceAngle };
     });
   }, [data, total]);
@@ -47,23 +80,18 @@ export default function ExpensePieChart({ selectedDate }: Props) {
 
   const getRadius = (value: number) => {
     const maxValue = Math.max(...data.map(d => d.value));
-    const normalized = value / maxValue;
-
+    const normalized = maxValue === 0 ? 0 : value / maxValue;
     return MIN_RADIUS + normalized * (MAX_RADIUS - MIN_RADIUS);
   };
 
   const describeArc = (x: number, y: number, r: number, start: number, end: number) => {
     const polarToCartesian = (cx: number, cy: number, radius: number, angle: number) => {
       const rad = (angle - 90) * Math.PI / 180.0;
-      return {
-        x: cx + radius * Math.cos(rad),
-        y: cy + radius * Math.sin(rad),
-      };
+      return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
     };
 
     const startPoint = polarToCartesian(x, y, r, end);
     const endPoint = polarToCartesian(x, y, r, start);
-
     const largeArcFlag = end - start <= 180 ? "0" : "1";
 
     return `
@@ -74,7 +102,6 @@ export default function ExpensePieChart({ selectedDate }: Props) {
     `;
   };
 
-  // ✅ return AFTER hooks
   if (!mounted) return null;
 
   return (
@@ -131,4 +158,20 @@ export default function ExpensePieChart({ selectedDate }: Props) {
       </div>
     </div>
   );
+}
+
+// ✅ Stable color (no hydration mismatch)
+function colorFromCategory(category: string) {
+  const palette = [
+    "#00358a", "#8b0000", "#007a2d", "#976000",
+    "#7c3aed", "#0ea5e9", "#db2777", "#10b981",
+    "#f97316", "#84cc16", "#14b8a6", "#f43f5e",
+  ];
+
+  // simple stable hash
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = (hash * 31 + category.charCodeAt(i)) >>> 0;
+  }
+  return palette[hash % palette.length];
 }
