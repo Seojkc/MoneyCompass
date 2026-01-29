@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import "../CSS/PieChart.css";
 
 export type PieItem = {
@@ -14,21 +14,13 @@ type Props = {
 };
 
 export default function ExpensePieChart({ selectedDate }: Props) {
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-    const MIN_RADIUS = 75;
-    const MAX_RADIUS = 100;
-
-    const getRadius = (value: number) => {
-    const maxValue = Math.max(...data.map(d => d.value));
-    const normalized = value / maxValue;
-
-    return MIN_RADIUS + normalized * (MAX_RADIUS - MIN_RADIUS);
-    };
-
-
-
-  // 🔹 Random temp data (replace later with API)
+  // 🔹 Static temp data (replace later with real data)
   const data: PieItem[] = [
     { category: "Rent", value: 40, color: "#00358a" },
     { category: "Food", value: 25, color: "#8b0000" },
@@ -49,6 +41,16 @@ export default function ExpensePieChart({ selectedDate }: Props) {
       return { ...item, startAngle, sliceAngle };
     });
   }, [data, total]);
+
+  const MIN_RADIUS = 75;
+  const MAX_RADIUS = 100;
+
+  const getRadius = (value: number) => {
+    const maxValue = Math.max(...data.map(d => d.value));
+    const normalized = value / maxValue;
+
+    return MIN_RADIUS + normalized * (MAX_RADIUS - MIN_RADIUS);
+  };
 
   const describeArc = (x: number, y: number, r: number, start: number, end: number) => {
     const polarToCartesian = (cx: number, cy: number, radius: number, angle: number) => {
@@ -72,51 +74,48 @@ export default function ExpensePieChart({ selectedDate }: Props) {
     `;
   };
 
-  const monthYear = selectedDate.toLocaleString("default", {
-    month: "long",
-    year: "numeric",
-  });
+  // ✅ return AFTER hooks
+  if (!mounted) return null;
 
   return (
     <div className="pie-wrapper">
-      <h3>Expense Breakdown </h3>
+      <h3>Expense Breakdown</h3>
 
       <div className="pie-content">
         <svg width="220" height="220" viewBox="0 0 220 220">
-            <defs>
-                <filter id="glow">
-                    <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
-                    <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                </filter>
-            </defs>
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
 
-            {slices.map((slice, i) => (
+          {slices.map((slice, i) => (
             <g key={i}>
-                <path
+              <path
                 d={describeArc(110, 110, getRadius(slice.value), slice.startAngle, slice.startAngle + slice.sliceAngle)}
                 fill="none"
                 stroke={slice.color}
                 strokeWidth="6"
                 opacity="0.25"
                 filter="url(#glow)"
-                />
-                <path
+              />
+              <path
                 d={describeArc(110, 110, getRadius(slice.value), slice.startAngle, slice.startAngle + slice.sliceAngle)}
                 fill="none"
                 stroke={slice.color}
                 strokeWidth="2.5"
                 strokeLinecap="round"
-                />
+              />
             </g>
-            ))}
+          ))}
 
-            <circle cx="110" cy="110" r="30" fill="#ffffff70" />
-            <circle cx="110" cy="110" r="28" fill="#000000" />
+          <circle cx="110" cy="110" r="30" fill="#ffffff70" />
+          <circle cx="110" cy="110" r="28" fill="#000000" />
         </svg>
-
 
         <div className="pie-legend">
           {data.map((item, i) => (
@@ -124,7 +123,7 @@ export default function ExpensePieChart({ selectedDate }: Props) {
               <span className="color-dot" style={{ background: item.color }} />
               <span>{item.category}</span>
               <span className="percent">
-                {((item.value / total) * 100)}%
+                {((item.value / total) * 100).toFixed(1)}%
               </span>
             </div>
           ))}
