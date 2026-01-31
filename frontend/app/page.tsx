@@ -82,6 +82,13 @@ export default function Home() {
   const lastExpenseCategory =
     [...transactions].filter(t => t.type === "expense").map(t => t.category).pop() || "Food";
 
+
+  const sameMonth = (d: Date, selected: Date) =>
+    d.getMonth() === selected.getMonth() && d.getFullYear() === selected.getFullYear();
+
+  const entriesThisMonth = entries.filter(e => sameMonth(e.date, selectedMonth));
+
+
   return (
     <div className="">
       <h1 className="main-heading">Dashboard</h1>
@@ -113,15 +120,16 @@ export default function Home() {
         <div className="TransactionTable-container">
           <IncomeExpenseTable
             title="Income"
-            entries={entries.filter(e => e.type === "income")}
+            entries={entriesThisMonth.filter(e => e.type === "income")}
             onDelete={deleteEntry}
           />
 
           <IncomeExpenseTable
             title="Expense"
-            entries={entries.filter(e => e.type === "expense")}
+            entries={entriesThisMonth.filter(e => e.type === "expense")}
             onDelete={deleteEntry}
           />
+
         </div>
       </div>
     </div>

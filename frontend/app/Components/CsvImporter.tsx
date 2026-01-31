@@ -27,7 +27,7 @@ export default function CsvImporter({ onData }: Props) {
 
   const CATEGORY_MAP: Record<string, string[]> = {
     Travel: ["uber","lyft","taxi","cab","airbnb","expedia","booking","flight","westjet","air canada","gas","petro","shell","esso","parking","toll"],
-    Groceries: ["walmart","costco","superstore","loblaws","nofrills","freshco","metro","sobeys","whole foods","food basics","grocery"],
+    Groceries: ["wal-mart","costco","superstore","loblaws","nofrills","freshco","metro","sobeys","whole foods","food basics","grocery"],
     Food: ["mcdonald","burger","kfc","subway","pizza","starbucks","tim hortons","coffee","cafe","restaurant","ubereats","doordash","skip"],
     Shopping: ["amazon","ebay","best buy","apple","samsung","sony","ikea","home depot","canadian tire","winners","marshalls","zara","h&m","nike","adidas"],
     Utilities: ["internet","hydro","electric","water","rogers","bell","telus","fido","freedom","koodo","mobile","wifi","utility"],
