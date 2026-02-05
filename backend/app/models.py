@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Date, Numeric, ForeignKey, Text
+from sqlalchemy import Column, String, Date, Numeric, ForeignKey, Text, Integer, DateTime, func
 from sqlalchemy.orm import relationship
 from app.db.session import Base
 import uuid
@@ -29,3 +29,12 @@ class Entry(Base):
   date = Column(Date, nullable=False)
 
   user = relationship("User", back_populates="entries")
+
+# class User(Base):
+#     __tablename__ = "users"
+
+#     id = Column(Integer, primary_key=True, index=True)
+#     name = Column(String(100), nullable=False)
+#     email = Column(String(120), unique=True, index=True, nullable=False)
+
+#     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
