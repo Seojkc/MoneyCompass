@@ -150,7 +150,7 @@ export default function ExpensePieChart({ selectedDate, entries }: Props) {
               <span className="color-dot" style={{ background: item.color }} />
               <span>{item.category}</span>
               <span className="percent">
-                {((item.value / total) * 100).toFixed(1)}%
+               $ {((item.value) ).toFixed(1)}
               </span>
             </div>
           ))}
