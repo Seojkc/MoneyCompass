@@ -38,6 +38,7 @@ export default function Home() {
     (async () => {
       const dbEntries = await listEntries();
       setEntries(dbEntries);
+      console.log("Loaded entries from backend:", dbEntries);
     })();
   }, []);
 
@@ -49,15 +50,16 @@ export default function Home() {
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
   // ✅ QuickAdd should update BOTH: transactions (for last used) AND entries (for table)
-  const addQuickEntry = (type: "income" | "expense", category: string, amount: number) => {
-    setTransactions(prev => [...prev, { type, category, amount }]);
+  const addQuickEntry = async (type: "income" | "expense",category: string,amount: number) => {
+    setTransactions((prev) => [...prev, { type, category, amount }]);
 
     const today = new Date();
-    // keep "today" clean (no timezone surprises in UI)
     const dateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-    const newEntry: Entry = {
-      id: makeId(),
+    // 1) Create a temp entry for instant UI update
+    const tempId = makeId();
+    const optimisticEntry: Entry = {
+      id: tempId,
       type,
       name: "QuickEntry",
       category,
@@ -65,19 +67,41 @@ export default function Home() {
       date: dateOnly,
     };
 
-    setEntries(prev => [newEntry, ...prev]); // put latest at top
+    setEntries((prev) => [optimisticEntry, ...prev]);
+
+    try {
+      // 2) POST to backend (NO id in payload)
+      const created = await createEntryFromUi({
+        type: optimisticEntry.type,
+        name: optimisticEntry.name,
+        category: optimisticEntry.category,
+        amount: optimisticEntry.amount,
+        date: optimisticEntry.date,
+      });
+
+      // 3) Replace temp entry with real DB entry (real id)
+      setEntries((prev) =>
+        prev.map((e) => (e.id === tempId ? created : e))
+      );
+    } catch (err) {
+      console.error("Failed to create entry:", err);
+
+      // 4) Rollback optimistic UI if API failed
+      setEntries((prev) => prev.filter((e) => e.id !== tempId));
+    }
   };
 
   const deleteEntry = (id: string) => {
     setEntries(prev => prev.filter(e => e.id !== id));
   };
 
-  const handleCsvData = (rows: ImportedRow[]) => {
-    const converted: Entry[] = rows.map(r => {
+  const handleCsvData = async (rows: ImportedRow[]) => {
+    // 1) Convert CSV rows -> UI entries (use TEMP ids for UI)
+    const converted: Entry[] = rows.map((r) => {
       const [y, m, d] = r.date.split("-").map(Number);
 
       return {
-        id: r.id,
+        id: crypto.randomUUID(), // temp id for UI
         type: r.amount < 0 ? "expense" : "income",
         name: r.name || "Unknown",
         category: r.category || "Other",
@@ -86,7 +110,55 @@ export default function Home() {
       };
     });
 
-    setEntries(prev => [...converted, ...prev]);
+    // 2) Optimistic UI update
+    setEntries((prev) => [...converted, ...prev]);
+
+    // 3) POST each entry to backend, then replace temp with real DB entry
+    const results = await Promise.allSettled(
+      converted.map(async (temp) => {
+        const created = await createEntryFromUi({
+          type: temp.type,
+          name: temp.name,
+          category: temp.category,
+          amount: temp.amount,
+          date: temp.date,
+        });
+        return { tempId: temp.id, created };
+      })
+    );
+
+    // 4) Apply updates / rollbacks
+    setEntries((prev) => {
+      let next = [...prev];
+
+      for (const r of results) {
+        if (r.status === "fulfilled") {
+          const { tempId, created } = r.value;
+          next = next.map((e) => (e.id === tempId ? created : e));
+        } else {
+          // remove failed ones
+          // (optional) you can keep them and mark as "failed" instead
+          const failedTemp = converted.find((x) => results.indexOf(r as any) >= 0)?.id;
+          // safer: remove by matching all temps that didn't fulfill
+        }
+      }
+
+      // safer rollback: remove any temp ids that failed
+      const failedTempIds = results
+        .filter((x) => x.status === "rejected")
+        .map((_, idx) => converted[idx].id);
+
+      next = next.filter((e) => !failedTempIds.includes(e.id));
+
+      return next;
+    });
+
+    // Optional: log failures
+    results.forEach((r, idx) => {
+      if (r.status === "rejected") {
+        console.error("CSV row failed to import:", converted[idx], r.reason);
+      }
+    });
   };
 
   // Last used categories
