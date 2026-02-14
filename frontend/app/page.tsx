@@ -1,13 +1,18 @@
 'use client';
 
 import "./CSS/Dashboard.css";
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import MonthCard from "./Components/MonthSliderCard";
 import FinanceCards from "./Components/FinanceCards";
 import QuickAddEntry from "./Components/QuickAddEntry";
 import IncomeExpenseTable from "./Components/IncomeExpenseTable";
 import ExpensePieChart from "./Components/ExpensePieChart";
 import CsvImporter, { ImportedRow } from "./Components/CsvImporter";
+import { UiEntry, listEntries, createEntryFromUi, deleteEntryApi } from "@/lib/bridge";
+
+
+
+
 
 type Transaction = {
   type: "income" | "expense";
@@ -28,6 +33,15 @@ export default function Home() {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const dbEntries = await listEntries();
+      setEntries(dbEntries);
+    })();
+  }, []);
+
+
 
   const makeId = () =>
     (typeof crypto !== "undefined" && "randomUUID" in crypto)

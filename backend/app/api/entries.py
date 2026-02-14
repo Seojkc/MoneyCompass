@@ -17,7 +17,7 @@ def list_entries(
     type: str | None = Query(default=None),
     limit: int = Query(default=100, le=500),
 ):
-    q = db.query(Entry).filter(Entry.is_deleted == False)  # noqa: E712
+    q = db.query(Entry)  # noqa: E712
 
     if year is not None:
         q = q.filter(Entry.year == year)
@@ -98,23 +98,12 @@ def replace_entry(
     return entry
 
 
-# ---- DELETE: soft delete (recommended) ----
 @router.delete("/{entry_id}")
-def delete_entry(
-    entry_id: UUID,
-    db: Session = Depends(get_db),
-):
+def delete_entry(entry_id: UUID, db: Session = Depends(get_db)):
     entry = db.query(Entry).filter(Entry.id == entry_id).first()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
 
-    # soft delete if you have is_deleted column
-    if hasattr(entry, "is_deleted"):
-        entry.is_deleted = True
-        db.commit()
-        return {"deleted": True, "id": str(entry_id), "mode": "soft"}
-    else:
-        # hard delete fallback
-        db.delete(entry)
-        db.commit()
-        return {"deleted": True, "id": str(entry_id), "mode": "hard"}
+    db.delete(entry)
+    db.commit()
+    return {"deleted": True, "id": str(entry_id), "mode": "hard"}
