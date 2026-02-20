@@ -9,8 +9,7 @@ import IncomeExpenseTable from "./Components/IncomeExpenseTable";
 import ExpensePieChart from "./Components/ExpensePieChart";
 import CsvImporter, { ImportedRow } from "./Components/CsvImporter";
 import { UiEntry, listEntries, createEntryFromUi, deleteEntryApi } from "@/lib/bridge";
-
-
+import Analytics from "./Components/AnalyticsFolder/Analytics";
 
 
 
@@ -178,7 +177,7 @@ export default function Home() {
   return (
     <div className="">
       <h1 className="main-heading">Dashboard</h1>
-
+      
       <div className="firstpart-container">
         <MonthCard onChange={setSelectedMonth} />
         <FinanceCards selectedDate={selectedMonth} entries={entries} />
@@ -218,6 +217,9 @@ export default function Home() {
 
         </div>
       </div>
+
+
+      <Analytics ></Analytics>
     </div>
   );
 }

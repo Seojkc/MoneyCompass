@@ -1,0 +1,25 @@
+Frontend	React + TypeScript
+
+Framework	Next.js
+
+Styling	Tailwind CSS
+
+Backend	Python + FastAPI
+
+Database	PostgreSQL
+
+Cache	Redis
+
+Auth	JWT + OAuth2
+
+Cloud	AWS
+
+Containers	Docker
+
+CI/CD	GitHub Actions
+
+Testing	PyTest, Jest
+
+Charts	Recharts
+
+Data	pandas
