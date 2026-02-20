@@ -1,67 +1,80 @@
 import { NextResponse } from "next/server";
 
-type RangeKey = "1M" | "3M" | "1Y" | "5Y";
-
-function rangeToOutputSize(range: RangeKey) {
-  // Alpha Vantage gives "compact" (~100) or "full"
-  return range === "5Y" || range === "1Y" ? "full" : "compact";
-}
-
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const symbol = searchParams.get("symbol"); // e.g., "XIU.TO"
-  const range = (searchParams.get("range") as RangeKey) || "1M";
+  const symbol = searchParams.get("symbol"); // e.g. XIU.TO
 
   if (!symbol) {
     return NextResponse.json({ error: "Missing symbol" }, { status: 400 });
   }
 
-  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "Missing API key" }, { status: 500 });
-  }
+  // ✅ Fixed: always 1 year daily
+  const yahooRange = "1y";
+  const interval = "1d";
 
-  // Daily adjusted gives close + dividends/splits adjustments (good for long ranges)
   const url =
-    "https://www.alphavantage.co/query" +
-    `?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${encodeURIComponent(symbol)}` +
-    `&outputsize=${rangeToOutputSize(range)}` +
-    `&apikey=${apiKey}`;
+    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}` +
+    `?range=${yahooRange}&interval=${interval}&includePrePost=false&events=div%7Csplit`;
 
-  const r = await fetch(url, { next: { revalidate: 60 } }); // cache 60s
-  const json = await r.json();
+  try {
+    const r = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        Accept: "application/json",
+      },
+      next: { revalidate: 3600 }, // cache 1 hour (you can change)
+    });
 
-  const series = json["Time Series (Daily)"];
-  if (!series) {
+    if (!r.ok) {
+      const text = await r.text();
+      return NextResponse.json(
+        { error: "Yahoo request failed", status: r.status, raw: text },
+        { status: 502 }
+      );
+    }
+
+    const json = await r.json();
+    const result = json?.chart?.result?.[0];
+
+    if (!result) {
+      return NextResponse.json({ error: "Provider error", raw: json }, { status: 502 });
+    }
+
+    const timestamps: number[] = result.timestamp || [];
+    const closes: (number | null)[] = result.indicators?.quote?.[0]?.close || [];
+
+    const points = timestamps
+      .map((ts, i) => {
+        const p = closes[i];
+        if (p == null || Number.isNaN(p)) return null;
+        const d = new Date(ts * 1000);
+        const t = d.toISOString().slice(0, 10); // YYYY-MM-DD
+        return { t, p: Number(p.toFixed(2)) };
+      })
+      .filter(Boolean) as { t: string; p: number }[];
+
+    if (points.length < 2) {
+      return NextResponse.json(
+        { error: "Not enough data points", raw: { symbol, pointsCount: points.length } },
+        { status: 502 }
+      );
+    }
+
+    const last = points.at(-1)!.p;
+    const prevClose = points.at(-2)!.p;
+
+    return NextResponse.json({
+      symbol,
+      range: "1Y",
+      points,
+      last,
+      prevClose,
+      asOf: points.at(-1)!.t,
+    });
+  } catch (e: any) {
     return NextResponse.json(
-      { error: "Provider error", raw: json },
-      { status: 502 }
+      { error: "Server error", message: e?.message ?? String(e) },
+      { status: 500 }
     );
   }
-
-  // Convert to sorted points (oldest → newest)
-  const entries = Object.entries(series)
-    .map(([date, v]: any) => ({
-      date,
-      close: Number(v["4. close"]),
-    }))
-    .sort((a, b) => (a.date < b.date ? -1 : 1));
-
-  // Slice based on range (approx trading days)
-  const keep =
-    range === "1M" ? 22 : range === "3M" ? 66 : range === "1Y" ? 252 : 252 * 5;
-
-  const sliced = entries.slice(Math.max(0, entries.length - keep));
-
-  const last = sliced.at(-1)?.close ?? 0;
-  const prevClose = sliced.at(-2)?.close ?? last; // “previous close” from last two closes
-
-  // Return normalized format for your chart
-  return NextResponse.json({
-    symbol,
-    points: sliced.map((p) => ({ t: p.date, p: p.close })),
-    last,
-    prevClose,
-    asOf: sliced.at(-1)?.date ?? null,
-  });
 }

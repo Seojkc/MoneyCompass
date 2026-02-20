@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import React from "react";
-//import Tradegraph from "./tradegraph";
+import Tradegraph from "./tradegraph";
 
 type Step = {
   key: string;
@@ -108,7 +108,7 @@ export default function RoadmapTimeline() {
           {/* Empty card placeholder */}
           <div className="rounded-xl border p-4 bg-transparent">
             
-            {/* <Tradegraph /> */}
+            <Tradegraph  moneySpent={2400} category="Groceries"  />
           </div>
         </div>
       </div>
