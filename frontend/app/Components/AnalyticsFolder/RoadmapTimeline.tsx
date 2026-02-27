@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import React from "react";
 import Tradegraph from "./tradegraph";
+import StarterEmergencyFundCard from "./StarterEmergency";
+
 
 type Step = {
   key: string;
@@ -115,53 +117,24 @@ export default function RoadmapTimeline() {
 
       {/* ✅ DOWN: Full-width detail sections */}
       <main className="p-4 space-y-8">
-        {steps.map((s, idx) => {
-          const done = isCompleted(s.key);
+        <StarterEmergencyFundCard
+          initialTarget={2400}
+          initialSaved={900}
+          initialMonthlySave={200}
+          onCompletionChange={(done) => {
+            setCompleted((prev) => {
+              const next = new Set(prev);
+              if (done) next.add("starter-fund");
+              else next.delete("starter-fund");
+              return next;
+            });
 
-          return (
-            <section
-              key={s.key}
-              id={s.key}
-              className="scroll-mt-36 rounded-xl border p-5 border-white/10"
-              onMouseEnter={() => setActive(s.key)}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">
-                    {idx + 1}. {s.title}
-                  </h2>
-                  <p className="text-sm text-white/60 mt-1">{s.subtitle}</p>
-                </div>
+          }}
+        />
 
-                <button
-                  onClick={() => toggleComplete(s.key)}
-                  className={[
-                    "text-xs rounded-full border px-3 py-1 transition-colors",
-                    done
-                      ? "border-green-500 text-green-400"
-                      : "border-white/30 text-white/70 hover:text-white",
-                  ].join(" ")}
-                  aria-pressed={done}
-                >
-                  {done ? "Completed ✓" : "Mark complete"}
-                </button>
-              </div>
 
-              <div className="mt-4 text-sm text-white/80 leading-relaxed">
-                <p>
-                  Add the details here: goal, why it matters (i button), inputs, progress,
-                  quick actions, and insights.
-                </p>
 
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <MiniCard label="Current" value="—" />
-                  <MiniCard label="Target" value="—" />
-                  <MiniCard label="Progress" value={done ? "100%" : "—"} />
-                </div>
-              </div>
-            </section>
-          );
-        })}
+
       </main>
     </div>
   );

@@ -1,0 +1,355 @@
+.ef-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(
+      1200px 800px at 50% 20%,
+      rgba(255, 255, 255, 0.08),
+      rgba(0, 0, 0, 0) 60%
+    ),
+    #0b0c0f;
+
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.ef-card {
+  width: min(860px, 92vw);
+  border-radius: 28px;
+  padding: 28px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.03)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.ef-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ef-title {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+
+.ef-why {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 10px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.ef-chev {
+  font-size: 20px;
+  opacity: 0.9;
+  margin-top: -1px;
+}
+
+/* Badge */
+.ef-badgeWrap {
+  position: relative;
+  width: fit-content;
+  margin: 10px auto 16px;
+}
+
+.ef-badge {
+  background: rgba(255, 220, 120, 0.1);
+  border: 1px solid rgba(255, 220, 120, 0.18);
+  color: rgba(255, 226, 155, 0.95);
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.ef-badgeStrong {
+  font-weight: 800;
+}
+
+.ef-badgePointer {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -8px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid rgba(255, 226, 155, 0.3);
+  filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.25));
+}
+
+/* Progress */
+.ef-progressWrap {
+  margin-top: 6px;
+  margin-bottom: 18px;
+}
+
+.ef-track {
+  position: relative;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  box-shadow: inset 0 10px 18px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/**
+ * Smooth red → yellow → green with “zones”:
+ * - 0–25%: red-dominant
+ * - 25–75%: yellow-dominant
+ * - 75–100%: green-dominant
+ *
+ * The extra stops make it feel smooth (not banded).
+ */
+.ef-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    /* red zone */
+    #ff4b4b 0%,
+    #ff4b4b 18%,
+    #ff7a3d 26%,
+    /* yellow zone (dominant mid) */
+    #ffd84a 40%,
+    #ffd84a 60%,
+    #bfe75f 72%,
+    /* green zone */
+    #59e07a 82%,
+    #2fd06c 100%
+  );
+  filter: saturate(1.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transition: width 250ms ease;
+}
+
+.ef-trackHighlight {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0) 55%
+  );
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+/* Target pin */
+.ef-targetPin {
+  position: absolute;
+  right: 10px;
+  top: -38px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ef-targetFlag {
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(120, 255, 195, 0.14);
+  border: 1px solid rgba(120, 255, 195, 0.22);
+  color: rgba(170, 255, 220, 0.95);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+
+.ef-targetStem {
+  position: absolute;
+  right: 18px;
+  top: 30px;
+  width: 2px;
+  height: 28px;
+  background: rgba(120, 255, 195, 0.55);
+  border-radius: 999px;
+}
+
+.ef-targetDot {
+  position: absolute;
+  right: 12px;
+  top: 54px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(120, 255, 195, 0.9);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+/* Current marker dot */
+.ef-currentDot {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  transition: left 250ms ease;
+  display: grid;
+  place-items: center;
+}
+
+.ef-currentDotInner {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* Ticks */
+.ef-ticksRow {
+  position: relative;
+  height: 34px;
+  margin-top: 10px;
+}
+
+.ef-tick {
+  position: absolute;
+  top: 4px;
+  font-size: 20px;
+  letter-spacing: -0.2px;
+  color: rgba(255, 255, 255, 0.78);
+  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  user-select: none;
+}
+
+.ef-tickTarget {
+  position: absolute;
+  right: 0;
+  top: 4px;
+  font-size: 20px;
+  color: rgba(120, 255, 195, 0.75);
+  user-select: none;
+}
+
+.ef-arrow {
+  opacity: 0.8;
+}
+
+/* Rows */
+.ef-rows {
+  margin-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 14px;
+}
+
+.ef-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ef-rowTall {
+  display: block;
+  padding: 14px 0 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ef-label {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ef-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  min-width: 160px;
+  justify-content: flex-end;
+}
+
+.ef-currency {
+  opacity: 0.6;
+  font-size: 18px;
+}
+
+.ef-input {
+  width: 110px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 22px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.ef-savingLine {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.86);
+  letter-spacing: -0.2px;
+}
+
+.ef-strong {
+  font-weight: 800;
+}
+
+.ef-arrowMid {
+  opacity: 0.8;
+  padding: 0 6px;
+}
+
+.ef-muted {
+  opacity: 0.9;
+}
+
+.ef-monthPill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 800;
+}
+
+.ef-note {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(120, 255, 195, 0.7);
+  font-size: 18px;
+}
+
+.ef-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(120, 255, 195, 0.75);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+}
