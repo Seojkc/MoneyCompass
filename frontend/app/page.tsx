@@ -35,11 +35,12 @@ export default function Home() {
 
   useEffect(() => {
     (async () => {
-      const dbEntries = await listEntries();
+      const y = selectedMonth.getFullYear();
+      const m = selectedMonth.getMonth() + 1;
+      const dbEntries = await listEntries({ year: y, month: m, limit: 500 });
       setEntries(dbEntries);
-      console.log("Loaded entries from backend:", dbEntries);
     })();
-  }, []);
+  }, [selectedMonth]);
 
 
 
@@ -54,17 +55,24 @@ export default function Home() {
 
     const today = new Date();
     const dateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isSameSelectedMonthAsToday =
+      selectedMonth.getFullYear() === today.getFullYear() &&
+      selectedMonth.getMonth() === today.getMonth();
 
-    // 1) Create a temp entry for instant UI update
-    const tempId = makeId();
-    const optimisticEntry: Entry = {
-      id: tempId,
-      type,
-      name: "QuickEntry",
-      category,
-      amount: Math.abs(amount),
-      date: dateOnly,
-    };
+    const quickDate = isSameSelectedMonthAsToday
+      ? new Date(today.getFullYear(), today.getMonth(), today.getDate()) // today (no time)
+      : new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1); // 1st of selected month (no time)
+
+        // 1) Create a temp entry for instant UI update
+        const tempId = makeId();
+        const optimisticEntry: Entry = {
+          id: tempId,
+          type,
+          name: "QuickEntry",
+          category,
+          amount: Math.abs(amount),
+          date: quickDate,
+        };
 
     setEntries((prev) => [optimisticEntry, ...prev]);
 
@@ -90,8 +98,25 @@ export default function Home() {
     }
   };
 
-  const deleteEntry = (id: string) => {
-    setEntries(prev => prev.filter(e => e.id !== id));
+  const deleteEntry = async (id: string) => {
+    // 1) Optimistic UI remove
+    const snapshot = entries;
+    setEntries((prev) => prev.filter((e) => e.id !== id));
+
+    try {
+      // 2) Delete from DB
+      const res = await deleteEntryApi(id);
+
+      // Optional sanity check
+      if (!res?.deleted) {
+        throw new Error("Backend did not confirm deletion");
+      }
+    } catch (err) {
+      console.error("Failed to delete entry:", err);
+
+      // 3) Rollback UI if API failed
+      setEntries(snapshot);
+    }
   };
 
   const handleCsvData = async (rows: ImportedRow[]) => {

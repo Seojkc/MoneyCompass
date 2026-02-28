@@ -17,7 +17,7 @@ def list_entries(
     type: str | None = Query(default=None),
     limit: int = Query(default=100, le=500),
 ):
-    q = db.query(Entry)  # noqa: E712
+    q = db.query(Entry).filter(Entry.is_deleted == False) # noqa: E712
 
     if year is not None:
         q = q.filter(Entry.year == year)
@@ -70,6 +70,9 @@ def update_entry(entry_id: UUID, payload: EntryUpdate, db: Session = Depends(get
     db.commit()
     db.refresh(entry)
     return entry
+
+
+
 @router.put("/{entry_id}", response_model=EntryOut)
 def replace_entry(
     entry_id: UUID,
@@ -100,10 +103,13 @@ def replace_entry(
 
 @router.delete("/{entry_id}")
 def delete_entry(entry_id: UUID, db: Session = Depends(get_db)):
-    entry = db.query(Entry).filter(Entry.id == entry_id).first()
+    
+    
+    print("Attempting to delete entry with ID:", entry_id)
+    entry = db.query(Entry).filter(Entry.id == str(entry_id)).first()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
 
-    db.delete(entry)
+    entry.is_deleted = True
     db.commit()
-    return {"deleted": True, "id": str(entry_id), "mode": "hard"}
+    return {"deleted": True, "id": str(entry_id), "mode": "soft"}

@@ -1,5 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
+
 console.log("API_URL =", API_URL); 
 
 export type UiEntry = {
@@ -10,6 +11,42 @@ export type UiEntry = {
   amount: number;
   date: Date;
 };
+
+export type UiUserStepMetric = {
+  id: string;
+  user_id: string;
+  step_key: string;
+  metric_key: string;
+  value_num: number;
+};
+
+export type UpsertMetric = {
+  user_id: string;
+  step_key: string;
+  metric_key: string;
+  value_num: number;
+};
+
+export type UiUserStepProgress = {
+  id: string;
+  user_id: string;
+  step_key: string;
+  progress: number; // 0-100
+};
+
+
+export type UiRoadmapStep = {
+  id: string;
+  key: string;
+  title: string;
+  subtitle: string;
+  description?: string | null;
+  step_order: number;
+  is_active: boolean;
+};
+
+
+
 
 type ApiEntry = {
   id: string;
@@ -98,8 +135,25 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 
-export async function listEntries(): Promise<UiEntry[]> {
-  const data = await request<ApiEntry[]>("/entries");
+type ListEntriesParams = {
+  year?: number;
+  month?: number; // 1-12
+  type?: "income" | "expense";
+  limit?: number; // optional, backend default 100
+};
+
+
+export async function listEntries(params?: ListEntriesParams): Promise<UiEntry[]> {
+  const qs = new URLSearchParams();
+
+  if (params?.year != null) qs.set("year", String(params.year));
+  if (params?.month != null) qs.set("month", String(params.month));
+  if (params?.type) qs.set("type", params.type);
+  if (params?.limit != null) qs.set("limit", String(params.limit));
+
+  const url = `/entries${qs.toString() ? `?${qs.toString()}` : ""}`;
+
+  const data = await request<ApiEntry[]>(url);
   return data.map(apiToUi);
 }
 
@@ -159,5 +213,62 @@ export async function putEntryFromUi(id: string, entry: Omit<UiEntry, "id">): Pr
 }
 
 export async function deleteEntryApi(id: string) {
+
   return request<{ deleted: boolean; id: string }>(`/entries/${id}`, { method: "DELETE" });
+}
+
+
+export async function listRoadmapSteps(activeOnly = true): Promise<UiRoadmapStep[]> {
+  const qs = new URLSearchParams();
+  qs.set("active_only", String(activeOnly));
+  const data = await request<UiRoadmapStep[]>(`/roadmap-steps?${qs.toString()}`);
+  return data;
+}
+
+
+export async function listUserStepsProgress(userId: string): Promise<UiUserStepProgress[]> {
+  const qs = new URLSearchParams({ user_id: userId });
+  const data = await request<UiUserStepProgress[]>(`/user-steps-progress?${qs.toString()}`);
+  return data;
+}
+
+export async function upsertUserStepProgress(input: {
+  user_id: string;
+  step_key: string;
+  progress: number; // 0-100
+}): Promise<UiUserStepProgress> {
+  const data = await request<UiUserStepProgress>("/user-steps-progress", {
+    method: "PUT",
+    body: JSON.stringify(input),
+    headers: { "Content-Type": "application/json" },
+  });
+  return data;
+}
+
+export async function listUserStepMetrics(params: {
+  userId: string;
+  stepKey?: string;
+}): Promise<UiUserStepMetric[]> {
+  const qs = new URLSearchParams();
+  qs.set("user_id", params.userId);
+  if (params.stepKey) qs.set("step_key", params.stepKey);
+
+  const data = await request<UiUserStepMetric[]>(`/user-step-metrics?${qs.toString()}`);
+  return data;
+}
+
+export async function bulkUpsertUserStepMetrics(payload: UpsertMetric[]) {
+  const res = await fetch(`/api/user-step-metrics/bulk`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(t || "Failed to save metrics");
+  }
+
+  return (await res.json()) as UiUserStepMetric[];
 }

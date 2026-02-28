@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = process.env.API_URL!;
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+export async function PUT(req: NextRequest) {
+  const body = await req.text();
 
-  // pass through year/month/type/limit if present
-  const qs = searchParams.toString();
-  const upstream = `${API_URL}/entries${qs ? `?${qs}` : ""}`;
+  const res = await fetch(`${API_URL}/user-step-metrics/bulk`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body,
+    cache: "no-store",
+  });
 
-  const res = await fetch(upstream, { cache: "no-store" });
   const text = await res.text();
 
   if (!res.ok) {

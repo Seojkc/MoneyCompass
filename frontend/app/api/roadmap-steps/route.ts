@@ -4,10 +4,8 @@ const API_URL = process.env.API_URL!;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-
-  // pass through year/month/type/limit if present
   const qs = searchParams.toString();
-  const upstream = `${API_URL}/entries${qs ? `?${qs}` : ""}`;
+  const upstream = `${API_URL}/roadmap-steps${qs ? `?${qs}` : ""}`;
 
   const res = await fetch(upstream, { cache: "no-store" });
   const text = await res.text();
