@@ -24,7 +24,13 @@ class Entry(Base):
   __tablename__ = "entries"
 
   id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-  user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+  user_id: Mapped[str] = mapped_column(
+      String,
+      ForeignKey("users.id", ondelete="CASCADE"),
+      nullable=False,
+      index=True,
+  )
   user = relationship("User", back_populates="entries")
   date: Mapped[object] = mapped_column(Date, nullable=False, index=True)
   year: Mapped[int] = mapped_column(Integer, nullable=False, index=True)

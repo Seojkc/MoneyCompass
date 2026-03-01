@@ -187,9 +187,11 @@ export default function RoadmapTimeline() {
       {/* DOWN */}
       <main className="p-4 space-y-8">
         <StarterEmergencyFundCard
-          initialTarget={2400}
-          initialSaved={900}
-          initialMonthlySave={200}
+          userId="demo-user-1"          // ✅ later replace with real logged-in user id
+          stepKey="starter-fund"        // ✅ matches roadmap_steps.key
+          initialTarget={2400}          // fallback if DB has no metric yet
+          initialSaved={900}            // fallback if DB has no metric yet
+          initialMonthlySave={200}      // fallback if DB has no metric yet
           onCompletionChange={(done) => {
             setCompleted((prev) => {
               const next = new Set(prev);

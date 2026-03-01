@@ -258,17 +258,24 @@ export async function listUserStepMetrics(params: {
 }
 
 export async function bulkUpsertUserStepMetrics(payload: UpsertMetric[]) {
-  const res = await fetch(`/api/user-step-metrics/bulk`, {
+  return await request<UiUserStepMetric[]>(`/user-step-metrics/bulk`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-    cache: "no-store",
   });
+}
 
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(t || "Failed to save metrics");
-  }
 
-  return (await res.json()) as UiUserStepMetric[];
+export type SummaryResponse = {
+  months_requested: number;
+  months_used: number;
+  avg_income_per_month: number;
+  avg_expense_per_month: number;
+  savings_rate: number;
+  anchor?: { year: number; month: number };
+};
+
+export async function getSummary(params: { months: 3 | 6 | 12 }) {
+  const qs = new URLSearchParams();
+  qs.set("months", String(params.months));
+  return await request<SummaryResponse>(`/analytics/summary?${qs.toString()}`);
 }
