@@ -63,7 +63,8 @@ type ApiEntry = {
 
 
 type ApiEntryCreate = {
-  date: string; // "YYYY-MM-DD"
+  user_id: string; // ✅ ADD
+  date: string;
   type: "income" | "expense";
   name: string;
   category: string;
@@ -159,6 +160,7 @@ export async function listEntries(params?: ListEntriesParams): Promise<UiEntry[]
 
 export async function createEntryFromUi(input: Omit<UiEntry, "id">): Promise<UiEntry> {
   const payload: ApiEntryCreate = {
+    user_id: "demo-user-1", // ✅ for now
     date: dateToYmd(input.date),
     type: input.type,
     name: input.name,
@@ -167,6 +169,7 @@ export async function createEntryFromUi(input: Omit<UiEntry, "id">): Promise<UiE
     currency: "CAD",
     notes: null,
   };
+
   const created = await request<ApiEntry>("/entries", {
     method: "POST",
     body: JSON.stringify(payload),

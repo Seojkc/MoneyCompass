@@ -4,13 +4,14 @@ from typing import Optional, Literal
 from uuid import UUID
 
 class EntryCreate(BaseModel):
+    user_id: str
     date: date
     type: Literal["income", "expense"]
-    name: str = Field(min_length=1, max_length=200)
-    category: str = Field(min_length=1, max_length=100)
-    amount: float = Field(gt=0)
+    name: str
+    category: str
+    amount: float
     currency: str = "CAD"
-    notes: Optional[str] = None
+    notes: str | None = None
 
 class EntryUpdate(BaseModel):
     date: Optional[date] = None

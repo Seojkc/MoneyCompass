@@ -35,6 +35,7 @@ def create_entry(payload: EntryCreate, db: Session = Depends(get_db)):
     m = payload.date.month
 
     entry = Entry(
+        user_id=payload.user_id,   # ✅ ADD THIS
         date=payload.date,
         year=y,
         month=m,
@@ -74,16 +75,12 @@ def update_entry(entry_id: UUID, payload: EntryUpdate, db: Session = Depends(get
 
 
 @router.put("/{entry_id}", response_model=EntryOut)
-def replace_entry(
-    entry_id: UUID,
-    payload: EntryCreate,   # PUT should take the full create schema
-    db: Session = Depends(get_db),
-):
+def replace_entry(entry_id: UUID, payload: EntryCreate, db: Session = Depends(get_db)):
     entry = db.query(Entry).filter(Entry.id == entry_id).first()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
 
-    # overwrite all fields
+    # ✅ keep entry.user_id as-is (don’t overwrite)
     entry.date = payload.date
     entry.type = payload.type
     entry.name = payload.name
@@ -91,15 +88,12 @@ def replace_entry(
     entry.amount = payload.amount
     entry.currency = payload.currency
     entry.notes = payload.notes
-
-    # keep year/month in sync with date
     entry.year = payload.date.year
     entry.month = payload.date.month
 
     db.commit()
     db.refresh(entry)
     return entry
-
 
 @router.delete("/{entry_id}")
 def delete_entry(entry_id: UUID, db: Session = Depends(get_db)):
