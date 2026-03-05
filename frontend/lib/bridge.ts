@@ -18,6 +18,8 @@ export type UiUserStepMetric = {
   step_key: string;
   metric_key: string;
   value_num: number;
+  value_text?: string | null; 
+
 };
 
 export type UpsertMetric = {
@@ -25,6 +27,8 @@ export type UpsertMetric = {
   step_key: string;
   metric_key: string;
   value_num: number;
+  value_text?: string | null;
+
 };
 
 export type UiUserStepProgress = {
@@ -45,7 +49,15 @@ export type UiRoadmapStep = {
   is_active: boolean;
 };
 
-
+export type UiUserRoadmapStep = {
+  id: string;
+  key: string;
+  title: string;
+  subtitle: string;
+  step_order: number;
+  progress: number;
+  progress_updated_at?: string | null;
+};
 
 
 type ApiEntry = {
@@ -59,6 +71,17 @@ type ApiEntry = {
   amount: number;
   currency?: string | "CAD";
   notes?: string | null;
+};
+
+
+export type UiUserDebt = {
+  id: string;
+  user_id: string;
+  step_key: string;
+  name: string;
+  interest_pct: number;
+  balance: number;
+  total_payment: number;
 };
 
 
@@ -281,4 +304,45 @@ export async function getSummary(params: { months: 3 | 6 | 12 }) {
   const qs = new URLSearchParams();
   qs.set("months", String(params.months));
   return await request<SummaryResponse>(`/analytics/summary?${qs.toString()}`);
+}
+
+export async function listUserRoadmapSteps(
+  userId: string,
+  activeOnly = true
+): Promise<UiUserRoadmapStep[]> {
+  const qs = new URLSearchParams();
+  qs.set("user_id", userId);
+  qs.set("active_only", String(activeOnly));
+  return request<UiUserRoadmapStep[]>(`/user-roadmap?${qs.toString()}`);
+}
+
+
+
+
+export async function listUserDebts(params: { userId: string; stepKey: string }) {
+  const qs = new URLSearchParams({ user_id: params.userId, step_key: params.stepKey });
+  return await request<UiUserDebt[]>(`/user-debts?${qs.toString()}`);
+}
+
+export async function createUserDebt(payload: Omit<UiUserDebt, "id">) {
+  return await request<UiUserDebt>(`/user-debts`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function patchUserDebt(
+  id: string,
+  patch: Partial<Pick<UiUserDebt, "name" | "interest_pct" | "balance" | "total_payment">>
+) {
+  return await request<UiUserDebt>(`/user-debts/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function deleteUserDebt(id: string) {
+  return await request<{ deleted: boolean; id: string }>(`/user-debts/${id}`, {
+    method: "DELETE",
+  });
 }

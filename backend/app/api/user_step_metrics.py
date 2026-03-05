@@ -32,6 +32,9 @@ def upsert_metric(payload: UserStepMetricUpsert, db: Session = Depends(get_db)):
 
     if row:
         row.value_num = payload.value_num
+        # ✅ only overwrite when client sends it
+        if payload.value_text is not None:
+            row.value_text = payload.value_text
     else:
         row = UserStepMetric(**payload.model_dump())
         db.add(row)
@@ -39,6 +42,8 @@ def upsert_metric(payload: UserStepMetricUpsert, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(row)
     return row
+
+
 
 @router.put("/bulk", response_model=list[UserStepMetricOut])
 def bulk_upsert(payload: list[UserStepMetricUpsert], db: Session = Depends(get_db)):
@@ -57,6 +62,8 @@ def bulk_upsert(payload: list[UserStepMetricUpsert], db: Session = Depends(get_d
 
         if row:
             row.value_num = item.value_num
+            if item.value_text is not None:
+                row.value_text = item.value_text
         else:
             row = UserStepMetric(**item.model_dump())
             db.add(row)

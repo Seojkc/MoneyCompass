@@ -111,9 +111,30 @@ class UserStepMetric(Base):
     step_key: Mapped[str] = mapped_column(String(80), ForeignKey("roadmap_steps.key", ondelete="CASCADE"), nullable=False, index=True)
 
     metric_key: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
+    value_text: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Store numeric metrics (money, percent, counts)
     value_num: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
 
     created_at: Mapped[object] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[object] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    
+class UserDebt(Base):
+    __tablename__ = "user_debts"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    user_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    step_key: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
+
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+
+    interest_pct: Mapped[float] = mapped_column(Numeric(8, 2), nullable=False, server_default="0")
+    balance: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, server_default="0")
+    total_payment: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, server_default="0")
+
+    created_at: Mapped[object] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[object] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )

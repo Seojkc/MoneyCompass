@@ -300,7 +300,7 @@ export default function StarterEmergencyFundCard({
           </li>
           <li>
             • Stronger protection:{" "}
-            <span className="font-semibold">1 month of essential expenses</span>
+            <span className="font-semibold">2 month of essential expenses</span>
           </li>
         </ul>
         <p className="italic text-white/70">The goal isn’t perfection — it’s protection.</p>
@@ -454,7 +454,7 @@ export default function StarterEmergencyFundCard({
         {/* Values */}
         <div className="mt-6 border-t border-white/10 pt-4 space-y-4">
           <Row
-            label="Your Safety Cushion (1 month expenses)"
+            label="Your Safety Cushion (2 month expenses)"
             value={target}
             onChange={setTarget}
           />

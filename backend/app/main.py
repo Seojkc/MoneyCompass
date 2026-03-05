@@ -11,6 +11,8 @@ from app.api.roadmap_steps import router as roadmap_steps_router
 from app.api.user_steps_progress import router as user_steps_progress_router
 from app.api.user_step_metrics import router as user_step_metrics_router
 from app.api.analytics import router as analytics_router
+from app.api.user_roadmap import router as  user_roadmap_router
+from app.api.user_debts import router as user_debts_router
 
 
 
@@ -45,3 +47,5 @@ app.include_router(roadmap_steps_router)
 app.include_router(user_steps_progress_router)
 app.include_router(user_step_metrics_router)
 app.include_router(analytics_router)
+app.include_router(user_roadmap_router)
+app.include_router(user_debts_router)

@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Tradegraph from "./tradegraph";
 import StarterEmergencyFundCard from "./StarterEmergency";
-import { listRoadmapSteps } from "@/lib/bridge";
+import EliminateHighInterestDebtCard from "./EliminateHighInterestDebtCard";
+import { listUserRoadmapSteps } from "@/lib/bridge";
 
 type Step = {
   id: string;
@@ -29,16 +30,18 @@ export default function RoadmapTimeline() {
         setLoadingSteps(true);
         setStepsError(null);
 
-        const apiSteps = await listRoadmapSteps(true);
+        const userId = "demo-user-1"; // later from auth
+        const apiSteps = await listUserRoadmapSteps(userId, true);
 
         // Normalize + sort (backend should already sort, but keep safe)
-        const normalized: Step[] = apiSteps
+        const normalized = apiSteps
           .map((s: any) => ({
             id: s.id,
             key: s.key,
             title: s.title,
             subtitle: s.subtitle,
             step_order: s.step_order,
+            progress: s.progress,
           }))
           .sort((a, b) => a.step_order - b.step_order);
 
@@ -186,6 +189,7 @@ export default function RoadmapTimeline() {
 
       {/* DOWN */}
       <main className="p-4 space-y-8">
+        
         <StarterEmergencyFundCard
           userId="demo-user-1"          // ✅ later replace with real logged-in user id
           stepKey="starter-fund"        // ✅ matches roadmap_steps.key
@@ -197,6 +201,18 @@ export default function RoadmapTimeline() {
               const next = new Set(prev);
               if (done) next.add("starter-fund");
               else next.delete("starter-fund");
+              return next;
+            });
+          }}
+        />
+        <EliminateHighInterestDebtCard
+          userId="demo-user-1"
+          stepKey="debt"
+          onCompletionChange={(done) => {
+            setCompleted((prev) => {
+              const next = new Set(prev);
+              if (done) next.add("debt");
+              else next.delete("debt");
               return next;
             });
           }}
