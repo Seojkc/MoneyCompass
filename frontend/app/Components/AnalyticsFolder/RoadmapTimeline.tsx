@@ -5,6 +5,7 @@ import Tradegraph from "./tradegraph";
 import StarterEmergencyFundCard from "./StarterEmergency";
 import EliminateHighInterestDebtCard from "./EliminateHighInterestDebtCard";
 import InsuranceCard from "./Insurance";
+import FullEmergencyFundCard from "./FullEmergencyFundCard";
 import { listUserRoadmapSteps } from "@/lib/bridge";
 
 type Step = {
@@ -227,6 +228,19 @@ export default function RoadmapTimeline() {
               const next = new Set(prev);
               if (done) next.add("insurance");
               else next.delete("insurance");
+              return next;
+            });
+          }}
+        />
+
+        <FullEmergencyFundCard
+          userId="demo-user-1"
+          stepKey="full-fund"
+          onCompletionChange={(done) => {
+            setCompleted((prev) => {
+              const next = new Set(prev);
+              if (done) next.add("full-fund");
+              else next.delete("full-fund");
               return next;
             });
           }}

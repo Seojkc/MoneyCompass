@@ -290,6 +290,54 @@ export async function bulkUpsertUserStepMetrics(payload: UpsertMetric[]) {
   });
 }
 
+export const FULL_FUND_DEFAULT_METRICS: UpsertMetric[] = [
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "rent", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "utilities", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "groceries", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "transportation", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "phone_internet", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "insurance", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "minimum_debt_payments", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "essential_medical_costs", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "child_essentials", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "other_expenses", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "selected_months", value_num: 3 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "current_saved", value_num: 0 },
+  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "save_per_month", value_num: 0 },
+];
+
+export async function ensureUserStepMetrics(params: {
+  userId: string;
+  stepKey: string;
+  defaults: Array<{ metric_key: string; value_num: number; value_text?: string | null }>;
+}): Promise<UiUserStepMetric[]> {
+  const existing = await listUserStepMetrics({
+    userId: params.userId,
+    stepKey: params.stepKey,
+  });
+
+  const existingKeys = new Set(existing.map((m) => m.metric_key));
+
+  const missingPayload: UpsertMetric[] = params.defaults
+    .filter((d) => !existingKeys.has(d.metric_key))
+    .map((d) => ({
+      user_id: params.userId,
+      step_key: params.stepKey,
+      metric_key: d.metric_key,
+      value_num: d.value_num,
+      value_text: d.value_text ?? null,
+    }));
+
+  if (missingPayload.length > 0) {
+    await bulkUpsertUserStepMetrics(missingPayload);
+    return await listUserStepMetrics({
+      userId: params.userId,
+      stepKey: params.stepKey,
+    });
+  }
+
+  return existing;
+}
 
 export type SummaryResponse = {
   months_requested: number;
