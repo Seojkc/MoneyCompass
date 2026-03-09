@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Tradegraph from "./tradegraph";
 import StarterEmergencyFundCard from "./StarterEmergency";
 import EliminateHighInterestDebtCard from "./EliminateHighInterestDebtCard";
+import InsuranceCard from "./Insurance";
 import { listUserRoadmapSteps } from "@/lib/bridge";
 
 type Step = {
@@ -213,6 +214,19 @@ export default function RoadmapTimeline() {
               const next = new Set(prev);
               if (done) next.add("debt");
               else next.delete("debt");
+              return next;
+            });
+          }}
+        />
+
+        <InsuranceCard
+          userId="demo-user-1"
+          stepKey="insurance"
+          onCompletionChange={(done) => {
+            setCompleted((prev) => {
+              const next = new Set(prev);
+              if (done) next.add("insurance");
+              else next.delete("insurance");
               return next;
             });
           }}
