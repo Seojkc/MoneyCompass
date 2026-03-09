@@ -394,3 +394,232 @@ export async function deleteUserDebt(id: string) {
     method: "DELETE",
   });
 }
+
+type ListUserEntriesParams = {
+  userId: string;
+  year?: number;
+  month?: number;
+  type?: "income" | "expense";
+  limit?: number;
+};
+
+export async function listEntriesByUser(params: ListUserEntriesParams): Promise<UiEntry[]> {
+  const qs = new URLSearchParams();
+
+  qs.set("user_id", params.userId);
+  if (params.year != null) qs.set("year", String(params.year));
+  if (params.month != null) qs.set("month", String(params.month));
+  if (params.type) qs.set("type", params.type);
+  if (params.limit != null) qs.set("limit", String(params.limit));
+
+  const data = await request<ApiEntry[]>(`/entries/by-user?${qs.toString()}`);
+  return data.map(apiToUi);
+}
+
+export type FullFundSeed = {
+  rent: number;
+  utilities: number;
+  groceries: number;
+  transportation: number;
+  phone_internet: number;
+  insurance: number;
+  minimum_debt_payments: number;
+  essential_medical_costs: number;
+  child_essentials: number;
+  other_expenses: number;
+  selected_months: 3 | 6;
+  current_saved: number;
+  save_per_month: number;
+};
+
+function normalizeCategory(category: string): string {
+  return category.trim().toLowerCase();
+}
+
+function monthKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function roundMoney(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+export async function deriveFullFundSeedFromEntries(userId: string): Promise<FullFundSeed> {
+  const entries = await listEntriesByUser({
+    userId,
+    type: "expense",
+    limit: 500,
+  });
+
+  const latestMonthKeys = Array.from(
+    new Set(entries.map((e) => monthKey(e.date)).sort((a, b) => (a < b ? 1 : -1)))
+  ).slice(0, 3);
+
+  const recentExpenses = entries.filter((e) => latestMonthKeys.includes(monthKey(e.date)));
+
+  const bucketMonthTotals: Record<string, Record<string, number>> = {
+    rent: {},
+    utilities: {},
+    groceries: {},
+    transportation: {},
+    phone_internet: {},
+    insurance: {},
+    minimum_debt_payments: {},
+    essential_medical_costs: {},
+    child_essentials: {},
+    other_expenses: {},
+  };
+
+  function addToBucket(bucket: keyof typeof bucketMonthTotals, entry: UiEntry) {
+    const mk = monthKey(entry.date);
+    bucketMonthTotals[bucket][mk] =
+      (bucketMonthTotals[bucket][mk] ?? 0) + Number(entry.amount || 0);
+  }
+
+  for (const entry of recentExpenses) {
+    const cat = normalizeCategory(entry.category);
+
+    if (cat === "rent") {
+      addToBucket("rent", entry);
+    } else if (cat === "utilities") {
+      addToBucket("utilities", entry);
+    } else if (cat === "groceries" || cat === "food") {
+      addToBucket("groceries", entry);
+    } else if (cat === "travel" || cat === "transportation") {
+      addToBucket("transportation", entry);
+    } else if (
+      cat === "phone" ||
+      cat === "internet" ||
+      cat === "phone / internet" ||
+      cat === "phone/internet"
+    ) {
+      addToBucket("phone_internet", entry);
+    } else if (cat === "insurance") {
+      addToBucket("insurance", entry);
+    } else if (
+      cat === "debt" ||
+      cat === "loan" ||
+      cat === "credit card" ||
+      cat === "minimum debt payments"
+    ) {
+      addToBucket("minimum_debt_payments", entry);
+    } else if (
+      cat === "medical" ||
+      cat === "health" ||
+      cat === "pharmacy" ||
+      cat === "essential medical costs"
+    ) {
+      addToBucket("essential_medical_costs", entry);
+    } else if (
+      cat === "child" ||
+      cat === "kids" ||
+      cat === "baby" ||
+      cat === "child essentials"
+    ) {
+      addToBucket("child_essentials", entry);
+    } else if (cat === "other") {
+      addToBucket("other_expenses", entry);
+    }
+  }
+
+  function averageFromMonths(monthTotals: Record<string, number>): number {
+    const vals = Object.values(monthTotals).filter((v) => v > 0);
+    if (vals.length === 0) return 0;
+    return roundMoney(vals.reduce((a, b) => a + b, 0) / vals.length);
+  }
+
+  return {
+    rent: averageFromMonths(bucketMonthTotals.rent),
+    utilities: averageFromMonths(bucketMonthTotals.utilities),
+    groceries: averageFromMonths(bucketMonthTotals.groceries),
+    transportation: averageFromMonths(bucketMonthTotals.transportation),
+    phone_internet: averageFromMonths(bucketMonthTotals.phone_internet),
+    insurance: averageFromMonths(bucketMonthTotals.insurance),
+    minimum_debt_payments: averageFromMonths(bucketMonthTotals.minimum_debt_payments),
+    essential_medical_costs: averageFromMonths(bucketMonthTotals.essential_medical_costs),
+    child_essentials: averageFromMonths(bucketMonthTotals.child_essentials),
+    other_expenses: averageFromMonths(bucketMonthTotals.other_expenses),
+    selected_months: 3,
+    current_saved: 0,
+    save_per_month: 0,
+  };
+}
+
+export async function ensureFullFundMetricsSeeded(params: {
+  userId: string;
+  stepKey?: string;
+}): Promise<UiUserStepMetric[]> {
+  const stepKey = params.stepKey ?? "full-fund";
+
+  const existing = await listUserStepMetrics({
+    userId: params.userId,
+    stepKey,
+  });
+
+  const existingKeys = new Set(existing.map((m) => m.metric_key));
+
+  const requiredKeys = [
+    "rent",
+    "utilities",
+    "groceries",
+    "transportation",
+    "phone_internet",
+    "insurance",
+    "minimum_debt_payments",
+    "essential_medical_costs",
+    "child_essentials",
+    "other_expenses",
+    "selected_months",
+    "current_saved",
+    "save_per_month",
+  ];
+
+  if (existing.length === 0) {
+    const seed = await deriveFullFundSeedFromEntries(params.userId);
+
+    const payload: UpsertMetric[] = [
+      { user_id: params.userId, step_key: stepKey, metric_key: "rent", value_num: seed.rent },
+      { user_id: params.userId, step_key: stepKey, metric_key: "utilities", value_num: seed.utilities },
+      { user_id: params.userId, step_key: stepKey, metric_key: "groceries", value_num: seed.groceries },
+      { user_id: params.userId, step_key: stepKey, metric_key: "transportation", value_num: seed.transportation },
+      { user_id: params.userId, step_key: stepKey, metric_key: "phone_internet", value_num: seed.phone_internet },
+      { user_id: params.userId, step_key: stepKey, metric_key: "insurance", value_num: seed.insurance },
+      { user_id: params.userId, step_key: stepKey, metric_key: "minimum_debt_payments", value_num: seed.minimum_debt_payments },
+      { user_id: params.userId, step_key: stepKey, metric_key: "essential_medical_costs", value_num: seed.essential_medical_costs },
+      { user_id: params.userId, step_key: stepKey, metric_key: "child_essentials", value_num: seed.child_essentials },
+      { user_id: params.userId, step_key: stepKey, metric_key: "other_expenses", value_num: seed.other_expenses },
+      { user_id: params.userId, step_key: stepKey, metric_key: "selected_months", value_num: seed.selected_months },
+      { user_id: params.userId, step_key: stepKey, metric_key: "current_saved", value_num: seed.current_saved },
+      { user_id: params.userId, step_key: stepKey, metric_key: "save_per_month", value_num: seed.save_per_month },
+    ];
+
+    await bulkUpsertUserStepMetrics(payload);
+
+    return await listUserStepMetrics({
+      userId: params.userId,
+      stepKey,
+    });
+  }
+
+  const missingPayload: UpsertMetric[] = requiredKeys
+    .filter((k) => !existingKeys.has(k))
+    .map((k) => ({
+      user_id: params.userId,
+      step_key: stepKey,
+      metric_key: k,
+      value_num: k === "selected_months" ? 3 : 0,
+    }));
+
+  if (missingPayload.length > 0) {
+    await bulkUpsertUserStepMetrics(missingPayload);
+
+    return await listUserStepMetrics({
+      userId: params.userId,
+      stepKey,
+    });
+  }
+
+  return existing;
+}
+
+

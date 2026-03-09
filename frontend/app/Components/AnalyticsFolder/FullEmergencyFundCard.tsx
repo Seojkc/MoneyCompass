@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   bulkUpsertUserStepMetrics,
-  ensureUserStepMetrics,
+  ensureFullFundMetricsSeeded,
   UiUserStepMetric,
 } from "@/lib/bridge";
 
@@ -158,10 +158,9 @@ export default function FullEmergencyFundCard({
       try {
         setLoading(true);
 
-        const metrics = await ensureUserStepMetrics({
-          userId,
-          stepKey,
-          defaults: REQUIRED_DEFAULTS,
+        const metrics = await ensureFullFundMetricsSeeded({
+            userId,
+            stepKey,
         });
 
         if (!mounted) return;
@@ -362,66 +361,127 @@ export default function FullEmergencyFundCard({
   };
 
   const defaultWhy = (
-    <div className="space-y-5 text-sm md:text-base text-white/85 max-h-[65vh] overflow-y-auto pr-2">
-      <div className="space-y-2">
-        <h3 className="text-xl md:text-2xl font-semibold text-white">Why this matters</h3>
-        <p className="leading-relaxed text-white/80">
-          A full emergency fund protects your essential life expenses if income drops, work stops,
-          or a serious disruption happens.
-        </p>
+  <div className="space-y-5 text-sm md:text-base text-white/85 max-h-[65vh] overflow-y-auto pr-2">
+    
+    <div className="space-y-2">
+      <h3 className="text-xl md:text-2xl font-semibold text-white">
+        Why a full emergency fund matters
+      </h3>
+
+      <p className="leading-relaxed text-white/80">
+        Life rarely warns us before something changes. A job can pause, an unexpected
+        bill can appear, or circumstances can shift overnight. In those moments,
+        people without a safety net often face stress, panic, or high-interest debt.
+      </p>
+
+      <p className="leading-relaxed text-white/80">
+        A full emergency fund changes that experience completely. Instead of fear
+        and urgency, you gain time, clarity, and control over your next move.
+      </p>
+    </div>
+
+    <div className="space-y-2">
+      <div className="font-semibold text-white">
+        What this fund really protects
       </div>
 
       <ul className="space-y-2">
-        <li>• Helps prevent high-interest debt during income loss</li>
-        <li>• Protects housing, food, bills, and basic stability</li>
-        <li>• Gives you time to recover without panic</li>
-        <li>• Supports long-term financial progress</li>
+        <li>• Your home and essential living expenses</li>
+        <li>• Your ability to recover from unexpected situations</li>
+        <li>• Your freedom to make calm decisions instead of rushed ones</li>
+        <li>• Your long-term financial progress</li>
       </ul>
-
-      <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-emerald-200">
-        A full fund is your financial breathing room.
-      </div>
     </div>
-  );
+
+    <div className="space-y-2">
+      <div className="font-semibold text-white">
+        Think about this for a moment
+      </div>
+
+      <p className="leading-relaxed text-white/80">
+        If your income stopped tomorrow, how long could your essential life continue
+        without stress?
+      </p>
+
+      <p className="leading-relaxed text-white/80">
+        A full emergency fund is the answer to that question.
+      </p>
+    </div>
+
+    <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-emerald-200">
+      This fund isn’t just money in an account.  
+      It’s peace of mind, stability, and the confidence that you’re prepared for
+      whatever life brings.
+    </div>
+
+  </div>
+);
 
   const defaultHow = (
-    <div className="space-y-5 text-sm md:text-base text-white/85 max-h-[65vh] overflow-y-auto pr-2">
-      <div className="space-y-2">
-        <div className="text-lg md:text-xl font-semibold text-white">Common recommendation</div>
-        <p>3 months if income is stable</p>
-        <p>6 months if income is unstable</p>
-      </div>
+  <div className="space-y-5 text-sm md:text-base text-white/85 max-h-[65vh] overflow-y-auto pr-2">
 
-      <div className="space-y-2">
-        <div className="font-semibold text-white">Could be more if:</div>
-        <ul className="space-y-1 text-white/80">
-          <li>• self-employed</li>
-          <li>• contract worker</li>
-          <li>• seasonal job</li>
-          <li>• dependents</li>
-          <li>• single-income household</li>
-          <li>• health uncertainty</li>
-          <li>• difficult job market</li>
-          <li>• immigration / visa uncertainty</li>
-          <li>• large fixed expenses</li>
-        </ul>
-      </div>
+    <div className="space-y-2">
+      <h3 className="text-xl md:text-2xl font-semibold text-white">
+        How to choose the right amount
+      </h3>
 
-      <div className="space-y-2">
-        <div className="font-semibold text-white">Could be less if:</div>
-        <ul className="space-y-1 text-white/80">
-          <li>• very stable income</li>
-          <li>• strong family support</li>
-          <li>• dual income household</li>
-          <li>• low fixed expenses</li>
-        </ul>
-      </div>
-
-      <div className="rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 text-amber-200">
-        The card should guide intelligently, not force one universal number.
-      </div>
+      <p className="leading-relaxed text-white/80">
+        Most financial experts recommend saving between <span className="text-white font-semibold">3 to 6 months</span> of essential
+        living expenses. The right number depends on how stable and predictable your
+        life situation is.
+      </p>
     </div>
-  );
+
+    <div className="space-y-2">
+      <div className="font-semibold text-white">
+        A 3-month fund may be enough if:
+      </div>
+
+      <ul className="space-y-2">
+        <li>• Your income is stable and predictable</li>
+        <li>• You work in a field with strong job demand</li>
+        <li>• You have multiple income sources in your household</li>
+        <li>• Your monthly essential expenses are relatively low</li>
+      </ul>
+    </div>
+
+    <div className="space-y-2">
+      <div className="font-semibold text-white">
+        A 6-month fund may be safer if:
+      </div>
+
+      <ul className="space-y-2">
+        <li>• Your income is irregular or contract-based</li>
+        <li>• You are self-employed or freelancing</li>
+        <li>• You support dependents or family members</li>
+        <li>• Your job market may take longer to recover from setbacks</li>
+        <li>• Your monthly fixed expenses are high</li>
+      </ul>
+    </div>
+
+    <div className="space-y-2">
+      <div className="font-semibold text-white">
+        Remember
+      </div>
+
+      <p className="leading-relaxed text-white/80">
+        This number isn’t about fear — it’s about confidence. The goal is to build
+        enough financial space so that unexpected events don’t force rushed decisions.
+      </p>
+
+      <p className="leading-relaxed text-white/80">
+        Choose the level that helps you sleep peacefully at night, knowing your
+        essentials are protected.
+      </p>
+    </div>
+
+    <div className="rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 text-amber-200">
+      There is no perfect number. The best emergency fund is the one that gives
+      you confidence and keeps your life stable when things don’t go as planned.
+    </div>
+
+  </div>
+);
 
   return (
     <>

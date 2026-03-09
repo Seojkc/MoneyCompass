@@ -107,3 +107,29 @@ def delete_entry(entry_id: UUID, db: Session = Depends(get_db)):
     entry.is_deleted = True
     db.commit()
     return {"deleted": True, "id": str(entry_id), "mode": "soft"}
+
+
+@router.get("/by-user", response_model=list[EntryOut])
+def list_entries_by_user(
+    user_id: str = Query(...),
+    db: Session = Depends(get_db),
+    year: int | None = Query(default=None),
+    month: int | None = Query(default=None),
+    type: str | None = Query(default=None),
+    limit: int = Query(default=100, le=500),
+):
+    q = db.query(Entry).filter(
+        Entry.is_deleted == False,  # noqa: E712
+        Entry.user_id == user_id,
+    )
+
+    if year is not None:
+        q = q.filter(Entry.year == year)
+
+    if month is not None:
+        q = q.filter(Entry.month == month)
+
+    if type is not None:
+        q = q.filter(Entry.type == type)
+
+    return q.order_by(Entry.date.desc()).limit(limit).all()
