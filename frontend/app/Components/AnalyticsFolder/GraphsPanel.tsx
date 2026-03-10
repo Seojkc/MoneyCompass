@@ -192,14 +192,14 @@ export default function GraphsPanel({
         <Chart title="Category">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart
-              data={categoryData}
+              data={categoryData} 
               margin={{ top: 5, right: 10, left: -35, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
               <XAxis dataKey="category" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip />
-              <Bar dataKey="amount" opacity={loading ? 0.4 : 1} />
+              <Bar dataKey="amount" fill="#0077ffce" opacity={loading ? 0.4 : 1} />
             </BarChart>
           </ResponsiveContainer>
         </Chart>

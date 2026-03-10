@@ -85,6 +85,33 @@ export type UiUserDebt = {
 };
 
 
+export type UiUserSavingGoal = {
+  id: string;
+  user_id: string;
+  step_key: string;
+  name: string;
+  saved: number;
+  target: number;
+  monthly: number;
+};
+
+type ApiUserSavingGoal = {
+  id: string;
+  user_id: string;
+  step_key: string;
+  name: string;
+  saved: number;
+  target: number;
+  monthly: number;
+};
+
+
+
+
+
+
+
+
 type ApiEntryCreate = {
   user_id: string; // ✅ ADD
   date: string;
@@ -623,3 +650,47 @@ export async function ensureFullFundMetricsSeeded(params: {
 }
 
 
+export async function listUserSavingGoals(params: {
+  userId: string;
+  stepKey?: string;
+}) {
+  const qs = new URLSearchParams({
+    user_id: params.userId,
+    step_key: params.stepKey ?? "automate",
+  });
+
+  return await request<UiUserSavingGoal[]>(`/user-saving-goals?${qs.toString()}`);
+}
+
+export async function createUserSavingGoal(payload: {
+  user_id: string;
+  step_key?: string;
+  name: string;
+  saved: number;
+  target: number;
+  monthly: number;
+}) {
+  return await request<UiUserSavingGoal>(`/user-saving-goals`, {
+    method: "POST",
+    body: JSON.stringify({
+      ...payload,
+      step_key: payload.step_key ?? "automate",
+    }),
+  });
+}
+
+export async function patchUserSavingGoal(
+  id: string,
+  patch: Partial<Pick<UiUserSavingGoal, "saved" | "target" | "monthly">>
+) {
+  return await request<UiUserSavingGoal>(`/user-saving-goals/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function deleteUserSavingGoal(id: string) {
+  return await request<{ deleted: boolean; id: string }>(`/user-saving-goals/${id}`, {
+    method: "DELETE",
+  });
+}

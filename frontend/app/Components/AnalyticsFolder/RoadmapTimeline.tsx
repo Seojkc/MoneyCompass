@@ -7,6 +7,8 @@ import EliminateHighInterestDebtCard from "./EliminateHighInterestDebtCard";
 import InsuranceCard from "./Insurance";
 import FullEmergencyFundCard from "./FullEmergencyFundCard";
 import { listUserRoadmapSteps } from "@/lib/bridge";
+import AutomateSavingCard from "./AutomateSavingCard";
+
 
 type Step = {
   id: string;
@@ -245,6 +247,23 @@ export default function RoadmapTimeline() {
             });
           }}
         />
+
+        <AutomateSavingCard
+            userId="demo-user-1"
+            stepKey="automate"
+            initialGeneralSaved={0}
+            initialGeneralMonthly={0}
+            onCompletionChange={(done) => {
+              setCompleted((prev) => {
+                const next = new Set(prev);
+                if (done) next.add("automate");
+                else next.delete("automate");
+                return next;
+              });
+            }}
+          />
+
+
       </main>
     </div>
   );

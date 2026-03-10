@@ -138,3 +138,42 @@ class UserDebt(Base):
     updated_at: Mapped[object] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
+    
+
+
+class UserSavingGoal(Base):
+    __tablename__ = "user_saving_goals"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    user_id: Mapped[str] = mapped_column(
+        String,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    step_key: Mapped[str] = mapped_column(
+        String(80),
+        ForeignKey("roadmap_steps.key", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        default="automate",
+    )
+
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    saved: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    target: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    monthly: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+
+    created_at: Mapped[object] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[object] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
