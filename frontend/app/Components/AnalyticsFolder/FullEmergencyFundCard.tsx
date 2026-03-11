@@ -604,7 +604,7 @@ export default function FullEmergencyFundCard({
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl border border-white/10 bg-white/5 overflow-hidden w-[60%] mx-auto flex flex-col">
+        <div className="mt-5 rounded-xl border border-white/10 bg-white/5 overflow-hidden w-[60%] mx-auto flex flex-col bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_45%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]">
           <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-white/10 px-3 py-2 text-[11px] md:text-xs font-semibold uppercase tracking-wide text-white/60">
             <div>Usually includes</div>
             <div>Amount</div>

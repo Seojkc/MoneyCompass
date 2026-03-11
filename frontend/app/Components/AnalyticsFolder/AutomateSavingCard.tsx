@@ -71,28 +71,27 @@ export default function AutomateSavingCard({
     });
 
   const totalMonthlySavings = useMemo(() => {
-    const goalsMonthly = goals.reduce(
-      (sum, g) => sum + Math.max(0, Number(g.monthly) || 0),
-      0
-    );
-    return Math.max(0, Number(generalMonthly) || 0) + goalsMonthly;
-  }, [generalMonthly, goals]);
-
-  const autoDone = useMemo(() => {
-    const hasSystem =
-      generalMonthly > 0 ||
-      generalSaved > 0 ||
-      goals.some(
-        (g) =>
-          Number(g.saved) > 0 ||
-          Number(g.target) > 0 ||
-          Number(g.monthly) > 0
+  const goalsMonthly = goals.reduce(
+    (sum, g) => sum + Math.max(0, Number(g.monthly) || 0),
+    0
       );
+      return Math.max(0, Number(generalMonthly) || 0) + goalsMonthly;
+    }, [generalMonthly, goals]);
 
-    return hasSystem;
-  }, [generalMonthly, generalSaved, goals]);
+    const hasSavingSetup = useMemo(() => {
+      return (
+        generalMonthly > 0 ||
+        generalSaved > 0 ||
+        goals.some(
+          (g) =>
+            Number(g.saved) > 0 ||
+            Number(g.target) > 0 ||
+            Number(g.monthly) > 0
+        )
+      );
+    }, [generalMonthly, generalSaved, goals]);
 
-  const isDone = manualCompleted || autoDone;
+    const isDone = manualCompleted;
 
   useEffect(() => {
     if (!onCompletionChange) return;
@@ -332,22 +331,115 @@ export default function AutomateSavingCard({
   const defaultWhy = (
     <div className="space-y-6 text-sm md:text-base text-white/85 max-h-[65vh] overflow-y-auto pr-2">
       <div className="space-y-3">
-        <h3 className="text-xl md:text-2xl font-semibold text-white">⚙️ Why This Matters</h3>
+        <h3 className="text-xl md:text-2xl font-semibold text-white">
+          💫 Why Automating Savings Changes Everything
+        </h3>
         <p className="text-white/80 leading-relaxed">
-          Saving works better when it becomes automatic. Instead of deciding every month where money
-          should go, you create a system that moves money with intention.
+          Saving money is not only about numbers. It is about creating peace in your life.
+          When saving depends only on memory, motivation, or leftover money, it often gets
+          delayed. But when it becomes automatic, something powerful happens:
+          <span className="text-white font-medium"> your future starts getting protected on purpose.</span>
         </p>
       </div>
 
-      <ul className="space-y-2">
-        <li>• Reduces the chance of forgetting to save</li>
-        <li>• Makes progress more consistent</li>
-        <li>• Helps separate flexible savings and specific goals</li>
-        <li>• Builds a habit without relying on motivation</li>
-      </ul>
+      <div className="rounded-xl border border-sky-300/20 bg-sky-300/10 p-4 text-sky-100">
+        <p className="leading-relaxed">
+          Automating savings is one of the simplest ways to tell yourself:
+          <span className="font-semibold"> “I matter. My future matters. My peace matters.”</span>
+        </p>
+      </div>
 
-      <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-emerald-200 font-medium">
-        👉 A system is easier to trust than memory.
+      <div className="space-y-3">
+        <h4 className="text-white font-semibold text-lg">🌱 Small amounts become real change</h4>
+        <p className="text-white/80 leading-relaxed">
+          Most people think saving starts when they earn more. But real progress usually starts
+          when they create a system. Even small monthly amounts can slowly become something meaningful:
+          safety, freedom, confidence, options, and breathing room.
+        </p>
+        <p className="text-white/70">
+          It is not about being perfect. It is about becoming consistent.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="text-white font-semibold text-lg">🫶 Why this matters emotionally</h4>
+        <p className="text-white/80 leading-relaxed">
+          Money stress is heavy. It can quietly affect sleep, confidence, relationships, and
+          daily decisions. When you automate savings, you reduce that constant pressure little by little.
+          You stop relying on last-minute effort and start building quiet confidence in the background.
+        </p>
+        <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-emerald-200">
+          A savings system is not just money management.
+          <span className="font-semibold"> It is self-respect in action.</span>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="text-white font-semibold text-lg">🎯 Why goals matter</h4>
+        <p className="text-white/80 leading-relaxed">
+          General savings gives you flexibility. Goal-based savings gives you direction.
+          One protects you from uncertainty. The other moves you toward something meaningful.
+        </p>
+
+        <ul className="space-y-2 text-white/80">
+          <li>• General savings helps you feel more secure</li>
+          <li>• Goal savings helps you stay motivated and focused</li>
+          <li>• Together, they create balance in your financial life</li>
+        </ul>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="text-white font-semibold text-lg">🧠 What automation really does</h4>
+        <p className="text-white/80 leading-relaxed">
+          Automation removes the need to keep making the same hard decision every month.
+          Instead of asking, “Should I save this time?” the decision is already made.
+          That removes friction, reduces excuses, and helps progress continue even during busy or stressful months.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-amber-100">
+        <p className="leading-relaxed">
+          The truth is, your future does not need dramatic changes.
+          <span className="font-semibold"> It needs a dependable pattern.</span>
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="text-white font-semibold text-lg">✨ Imagine what this can become</h4>
+        <p className="text-white/80 leading-relaxed">
+          A few automatic transfers can become your emergency cushion.
+          A travel dream.
+          A laptop for your next opportunity.
+          A gift for someone you love.
+          A step toward freedom.
+        </p>
+        <p className="text-white/80 leading-relaxed">
+          What feels small today may become something deeply important tomorrow.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="text-white font-semibold text-lg">💛 A healthier mindset</h4>
+        <p className="text-white/80 leading-relaxed">
+          Saving should not feel like punishment. It should feel like care.
+          You are not taking money away from yourself.
+          <span className="font-medium text-white"> You are giving something to your future self:</span>
+          stability, choice, and relief.
+        </p>
+      </div>
+
+      <div className="pt-4 border-t border-white/10 space-y-3">
+        <p className="text-lg font-semibold text-white leading-relaxed">
+          Every automatic dollar is a quiet promise:
+          <br />
+          <span className="text-emerald-200">
+            “I am building a life that feels safer, calmer, and stronger.”
+          </span>
+        </p>
+
+        <p className="text-white/65 italic">
+          Start small. Stay steady. Let the system carry you forward.
+        </p>
       </div>
     </div>
   );
@@ -553,10 +645,12 @@ export default function AutomateSavingCard({
             <div className="text-sm text-white/70">
               {manualCompleted ? (
                 <span className="text-emerald-200">This step is marked as complete.</span>
-              ) : autoDone ? (
-                <span className="text-emerald-200">Your saving system is active.</span>
+              ) : hasSavingSetup ? (
+                <span className="text-sky-200">
+                  Your saving system is set up. Mark this step complete when you're ready.
+                </span>
               ) : (
-                <span>Set at least one monthly saving path to complete this step.</span>
+                <span>Set up your savings plan, then mark this step as complete.</span>
               )}
             </div>
 
