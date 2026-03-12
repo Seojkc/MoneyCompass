@@ -36,7 +36,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({}) => {
                 
             </div>
             <div className="thirdpart-container p-4">
-                    <h1 className='journey-progrss'>Journey Progress</h1>
+                    <h1 className='main-heading'>Journey Progress</h1>
                     <h3>How to become Financial independent ?</h3>
                     <RoadmapTimeline />
                 </div>

@@ -8,7 +8,7 @@ import InsuranceCard from "./Insurance";
 import FullEmergencyFundCard from "./FullEmergencyFundCard";
 import { listUserRoadmapSteps } from "@/lib/bridge";
 import AutomateSavingCard from "./AutomateSavingCard";
-
+import InvestCard from "./InvestCard";
 
 type Step = {
   id: string;
@@ -261,7 +261,20 @@ export default function RoadmapTimeline() {
                 return next;
               });
             }}
-          />
+        />
+
+        <InvestCard
+          userId="demo-user-1"
+          stepKey="invest"
+          onCompletionChange={(done) => {
+            setCompleted((prev) => {
+              const next = new Set(prev);
+              if (done) next.add("invest");
+              else next.delete("invest");
+              return next;
+            });
+          }}
+        />
 
 
       </main>

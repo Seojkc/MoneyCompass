@@ -666,6 +666,7 @@ export default function AutomateSavingCard({
               {manualCompleted ? "Completed ✓" : "Mark as Complete"}
             </button>
           </div>
+
         </div>
       </section>
 
