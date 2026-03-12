@@ -107,7 +107,21 @@ type ApiUserSavingGoal = {
 
 
 
-
+export type UiUserInvestment = {
+  id: string;
+  user_id: string;
+  step_key: string;
+  account_type: string;
+  name: string;
+  kind: string;
+  risk?: string | null;
+  monthly_amount: number;
+  current_invested: number;
+  average_return: number;
+  website?: string | null;
+  preset_id?: string | null;
+  is_custom?: boolean | null;
+};
 
 
 
@@ -691,6 +705,55 @@ export async function patchUserSavingGoal(
 
 export async function deleteUserSavingGoal(id: string) {
   return await request<{ deleted: boolean; id: string }>(`/user-saving-goals/${id}`, {
+    method: "DELETE",
+  });
+}
+
+
+export async function listUserInvestments(params: { userId: string; stepKey?: string }) {
+  const qs = new URLSearchParams({
+    user_id: params.userId,
+    step_key: params.stepKey ?? "invest",
+  });
+
+  return await request<UiUserInvestment[]>(`/user-investments?${qs.toString()}`);
+}
+
+export async function createUserInvestment(
+  payload: Omit<UiUserInvestment, "id">
+) {
+  return await request<UiUserInvestment>(`/user-investments`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function patchUserInvestment(
+  id: string,
+  patch: Partial<
+    Pick<
+      UiUserInvestment,
+      | "account_type"
+      | "name"
+      | "kind"
+      | "risk"
+      | "monthly_amount"
+      | "current_invested"
+      | "average_return"
+      | "website"
+      | "preset_id"
+      | "is_custom"
+    >
+  >
+) {
+  return await request<UiUserInvestment>(`/user-investments/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function deleteUserInvestment(id: string) {
+  return await request<{ deleted: boolean; id: string }>(`/user-investments/${id}`, {
     method: "DELETE",
   });
 }

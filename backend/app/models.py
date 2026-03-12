@@ -177,3 +177,46 @@ class UserSavingGoal(Base):
         onupdate=func.now(),
         nullable=False,
     )
+
+class UserInvestment(Base):
+    __tablename__ = "user_investments"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    user_id: Mapped[str] = mapped_column(
+        String,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    step_key: Mapped[str] = mapped_column(
+        String(80),
+        ForeignKey("roadmap_steps.key", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        default="invest",
+    )
+
+    account_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    kind: Mapped[str] = mapped_column(String(40), nullable=False)   # ETF / Stock / Mutual Fund / Other
+    risk: Mapped[str | None] = mapped_column(String(20), nullable=True)
+
+    monthly_amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    current_invested: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    average_return: Mapped[float] = mapped_column(Numeric(8, 2), nullable=False, default=0)
+
+    website: Mapped[str | None] = mapped_column(Text, nullable=True)
+    preset_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    is_custom: Mapped[bool | None] = mapped_column(nullable=True, default=False)
+
+    created_at: Mapped[object] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[object] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )

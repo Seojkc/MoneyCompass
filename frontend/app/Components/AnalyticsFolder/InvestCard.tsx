@@ -1,6 +1,14 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  bulkUpsertUserStepMetrics,
+  createUserInvestment,
+  deleteUserInvestment,
+  listUserInvestments,
+  patchUserInvestment,
+  UiUserInvestment,
+} from "@/lib/bridge";
 
 type Props = {
   userId: string;
@@ -39,6 +47,13 @@ type InvestmentRow = {
   isCustom?: boolean;
 };
 
+const METRIC_KEYS = {
+  currentInvested: "current_invested",
+  monthlyInvesting: "monthly_investing",
+  weightedAvgReturn: "weighted_avg_return",
+  completed: "is_completed",
+} as const;
+
 const PROJECTION_YEARS = [1, 3, 5, 10, 15, 20];
 
 const PRESETS: PresetInvestment[] = [
@@ -48,7 +63,8 @@ const PRESETS: PresetInvestment[] = [
     name: "BMO Short Corporate Bond Index ETF (ZCS)",
     kind: "ETF",
     risk: "Low",
-    website: "https://bmogam.com/ca-en/products/exchange-traded-fund/bmo-short-corporate-bond-index-etf-zcs/",
+    website:
+      "https://bmogam.com/ca-en/products/exchange-traded-fund/bmo-short-corporate-bond-index-etf-zcs/",
     averageReturn5y: 2.38,
   },
   {
@@ -56,7 +72,8 @@ const PRESETS: PresetInvestment[] = [
     name: "Vanguard Balanced ETF Portfolio (VBAL)",
     kind: "ETF",
     risk: "Low",
-    website: "https://www.vanguard.ca/en/product/etf/asset-allocation/9578/vanguard-balanced-etf-portfolio",
+    website:
+      "https://www.vanguard.ca/en/product/etf/asset-allocation/9578/vanguard-balanced-etf-portfolio",
     averageReturn5y: 7.93,
   },
 
@@ -66,7 +83,8 @@ const PRESETS: PresetInvestment[] = [
     name: "iShares Core S&P/TSX Capped Composite Index ETF (XIC)",
     kind: "ETF",
     risk: "Medium",
-    website: "https://www.blackrock.com/ca/investors/en/products/239837/ishares-sptsx-capped-composite-index-etf",
+    website:
+      "https://www.blackrock.com/ca/investors/en/products/239837/ishares-sptsx-capped-composite-index-etf",
     averageReturn5y: 16.28,
   },
   {
@@ -74,7 +92,8 @@ const PRESETS: PresetInvestment[] = [
     name: "Vanguard FTSE Canadian High Dividend Yield Index ETF (VDY)",
     kind: "ETF",
     risk: "Medium",
-    website: "https://www.vanguard.ca/en/product/etf/equity/9560/vanguard-ftse-canadian-high-dividend-yield-index-etf",
+    website:
+      "https://www.vanguard.ca/en/product/etf/equity/9560/vanguard-ftse-canadian-high-dividend-yield-index-etf",
     averageReturn5y: 18.82,
   },
   {
@@ -82,7 +101,8 @@ const PRESETS: PresetInvestment[] = [
     name: "iShares S&P/TSX 60 Index ETF (XIU)",
     kind: "ETF",
     risk: "Medium",
-    website: "https://www.blackrock.com/ca/investors/en/products/239832/ishares-sptsx-60-index-etf",
+    website:
+      "https://www.blackrock.com/ca/investors/en/products/239832/ishares-sptsx-60-index-etf",
     averageReturn5y: 16.74,
   },
   {
@@ -90,7 +110,8 @@ const PRESETS: PresetInvestment[] = [
     name: "BMO Low Volatility Canadian Equity ETF (ZLB)",
     kind: "ETF",
     risk: "Medium",
-    website: "https://bmogam.com/ca-en/products/exchange-traded-fund/bmo-low-volatility-canadian-equity-etf-zlb/",
+    website:
+      "https://bmogam.com/ca-en/products/exchange-traded-fund/bmo-low-volatility-canadian-equity-etf-zlb/",
     averageReturn5y: 16.42,
   },
   {
@@ -98,7 +119,8 @@ const PRESETS: PresetInvestment[] = [
     name: "iShares MSCI World Index ETF (XWD)",
     kind: "ETF",
     risk: "Medium",
-    website: "https://www.blackrock.com/ca/investors/en/products/239692/ishares-msci-world-index-etf",
+    website:
+      "https://www.blackrock.com/ca/investors/en/products/239692/ishares-msci-world-index-etf",
     averageReturn5y: 14.16,
   },
   {
@@ -106,7 +128,8 @@ const PRESETS: PresetInvestment[] = [
     name: "iShares S&P/TSX Composite High Dividend Index ETF (XEI)",
     kind: "ETF",
     risk: "Medium",
-    website: "https://www.blackrock.com/ca/investors/en/products/239846/ishares-sptsx-equity-income-index-etf",
+    website:
+      "https://www.blackrock.com/ca/investors/en/products/239846/ishares-sptsx-equity-income-index-etf",
     averageReturn5y: 17.06,
   },
   {
@@ -114,7 +137,8 @@ const PRESETS: PresetInvestment[] = [
     name: "iShares Core MSCI Canadian Quality Dividend Index ETF (XDIV)",
     kind: "ETF",
     risk: "Medium",
-    website: "https://www.blackrock.com/ca/investors/en/products/287823/ishares-core-msci-canadian-quality-dividend-index-etf",
+    website:
+      "https://www.blackrock.com/ca/investors/en/products/287823/ishares-core-msci-canadian-quality-dividend-index-etf",
     averageReturn5y: 18.54,
   },
 
@@ -124,7 +148,8 @@ const PRESETS: PresetInvestment[] = [
     name: "Vanguard S&P 500 Index ETF (VFV)",
     kind: "ETF",
     risk: "High",
-    website: "https://www.vanguard.ca/en/product/etf/equity/9563/vanguard-sp-500-index-etf",
+    website:
+      "https://www.vanguard.ca/en/product/etf/equity/9563/vanguard-sp-500-index-etf",
     averageReturn5y: 16.11,
   },
   {
@@ -132,15 +157,17 @@ const PRESETS: PresetInvestment[] = [
     name: "iShares Core Equity ETF Portfolio (XEQT)",
     kind: "ETF",
     risk: "High",
-    website: "https://www.blackrock.com/ca/investors/en/products/309480/ishares-core-equity-etf-portfolio",
-    averageReturn5y: 14.00,
+    website:
+      "https://www.blackrock.com/ca/investors/en/products/309480/ishares-core-equity-etf-portfolio",
+    averageReturn5y: 14.0,
   },
   {
     id: "xqq",
     name: "iShares NASDAQ 100 Index ETF (XQQ)",
     kind: "ETF",
     risk: "High",
-    website: "https://www.blackrock.com/ca/investors/en/products/239699/ishares-nasdaq-100-index-etf",
+    website:
+      "https://www.blackrock.com/ca/investors/en/products/239699/ishares-nasdaq-100-index-etf",
     averageReturn5y: 16.32,
   },
   {
@@ -148,7 +175,8 @@ const PRESETS: PresetInvestment[] = [
     name: "Invesco NASDAQ 100 Index ETF (QQC)",
     kind: "ETF",
     risk: "High",
-    website: "https://www.invesco.com/ca/en/financial-products/etfs/invesco-nasdaq-100-index-etf-cad.html",
+    website:
+      "https://www.invesco.com/ca/en/financial-products/etfs/invesco-nasdaq-100-index-etf-cad.html",
     averageReturn5y: 12.92,
   },
   {
@@ -164,7 +192,8 @@ const PRESETS: PresetInvestment[] = [
     name: "BMO NASDAQ 100 Equity Hedged to CAD Index ETF (ZQQ)",
     kind: "ETF",
     risk: "High",
-    website: "https://bmogam.com/ca-en/products/exchange-traded-fund/bmo-nasdaq-100-equity-hedged-to-cad-index-etf-zqq/",
+    website:
+      "https://bmogam.com/ca-en/products/exchange-traded-fund/bmo-nasdaq-100-equity-hedged-to-cad-index-etf-zqq/",
     averageReturn5y: 13.09,
   },
   {
@@ -172,7 +201,8 @@ const PRESETS: PresetInvestment[] = [
     name: "BMO NASDAQ 100 Equity Index ETF (ZNQ)",
     kind: "ETF",
     risk: "High",
-    website: "https://bmogam.com/ca-en/products/exchange-traded-fund/bmo-nasdaq-100-equity-index-etf-znq/",
+    website:
+      "https://bmogam.com/ca-en/products/exchange-traded-fund/bmo-nasdaq-100-equity-index-etf-znq/",
     averageReturn5y: 16.02,
   },
   {
@@ -180,7 +210,8 @@ const PRESETS: PresetInvestment[] = [
     name: "iShares S&P/TSX SmallCap Index ETF (XCS)",
     kind: "ETF",
     risk: "High",
-    website: "https://www.blackrock.com/ca/investors/en/products/239842/ishares-sptsx-smallcap-index-etf",
+    website:
+      "https://www.blackrock.com/ca/investors/en/products/239842/ishares-sptsx-smallcap-index-etf",
     averageReturn5y: 17.47,
   },
   {
@@ -188,7 +219,8 @@ const PRESETS: PresetInvestment[] = [
     name: "TD Global Technology Leaders Index ETF (TEC)",
     kind: "ETF",
     risk: "High",
-    website: "https://www.td.com/ca/en/asset-management/funds/solutions/etfs/fundcard?fundId=7113&fundname=TD-Global-Technology-Leaders-Index-ETF",
+    website:
+      "https://www.td.com/ca/en/asset-management/funds/solutions/etfs/fundcard?fundId=7113&fundname=TD-Global-Technology-Leaders-Index-ETF",
     averageReturn5y: 18.73,
   },
 ];
@@ -226,12 +258,23 @@ function compoundFutureValue(
   return fvPresent + fvSeries;
 }
 
-function uid() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function buildStorageKey(userId: string, stepKey: string) {
-  return `moneycompass:${userId}:${stepKey}:investments`;
+function rowFromApi(r: UiUserInvestment): InvestmentRow {
+  return {
+    id: r.id,
+    accountType: (r.account_type as AccountType) ?? "TFSA",
+    name: r.name,
+    kind: (r.kind as InvestmentKind) ?? "Other",
+    risk: (r.risk as RiskLevel | "") ?? "",
+    monthlyAmount: Number(r.monthly_amount) || 0,
+    currentInvested: Number(r.current_invested) || 0,
+    averageReturn:
+      r.average_return === null || r.average_return === undefined
+        ? ""
+        : Number(r.average_return),
+    website: r.website ?? "",
+    presetId: r.preset_id ?? undefined,
+    isCustom: !!r.is_custom,
+  };
 }
 
 export default function InvestCard({
@@ -248,12 +291,11 @@ export default function InvestCard({
   const [whyOpen, setWhyOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
 
-  const saveTimerRef = useRef<number | null>(null);
-  const hydratedRef = useRef(false);
-  const lastSavedSnapshotRef = useRef("");
   const lastDoneRef = useRef(false);
+  const summarySaveTimerRef = useRef<number | null>(null);
+  const hydratedRef = useRef(false);
+  const rowPatchTimersRef = useRef<Record<string, number>>({});
 
-  // add form
   const [selectedPresetId, setSelectedPresetId] = useState<string>("");
   const [customName, setCustomName] = useState("");
   const [accountType, setAccountType] = useState<AccountType>("TFSA");
@@ -292,7 +334,9 @@ export default function InvestCard({
 
     if (base <= 0) {
       const valid = rows
-        .map((r) => (typeof r.averageReturn === "number" ? r.averageReturn : null))
+        .map((r) =>
+          typeof r.averageReturn === "number" ? r.averageReturn : null
+        )
         .filter((v): v is number => v !== null);
 
       if (valid.length === 0) return 0;
@@ -302,7 +346,8 @@ export default function InvestCard({
     let total = 0;
     for (const row of rows) {
       const invested = Number(row.currentInvested) || 0;
-      const rate = typeof row.averageReturn === "number" ? row.averageReturn : 0;
+      const rate =
+        typeof row.averageReturn === "number" ? row.averageReturn : 0;
       total += invested * rate;
     }
     return total / base;
@@ -338,59 +383,99 @@ export default function InvestCard({
   }, [isDone, onCompletionChange]);
 
   useEffect(() => {
-    const storageKey = buildStorageKey(userId, stepKey);
+    let mounted = true;
 
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw) as InvestmentRow[];
-        if (Array.isArray(parsed)) {
-          setRows(parsed);
-          lastSavedSnapshotRef.current = JSON.stringify(parsed);
-        }
+    (async () => {
+      try {
+        setLoading(true);
+
+        const data = await listUserInvestments({
+          userId,
+          stepKey,
+        });
+
+        if (!mounted) return;
+
+        setRows(data.map(rowFromApi));
+        hydratedRef.current = true;
+        setSaveState("idle");
+      } catch (e) {
+        if (!mounted) return;
+        console.error(e);
+        setSaveState("error");
+      } finally {
+        if (!mounted) return;
+        setLoading(false);
       }
-    } catch {
-      setSaveState("error");
-    } finally {
-      hydratedRef.current = true;
-      setLoading(false);
-    }
+    })();
+
+    return () => {
+      mounted = false;
+    };
   }, [userId, stepKey]);
 
   useEffect(() => {
     if (!hydratedRef.current) return;
 
-    const snap = JSON.stringify(rows);
-    if (snap === lastSavedSnapshotRef.current) return;
-
-    if (saveTimerRef.current) {
-      window.clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = null;
+    if (summarySaveTimerRef.current) {
+      window.clearTimeout(summarySaveTimerRef.current);
+      summarySaveTimerRef.current = null;
     }
 
     setSaveState("saving");
 
-    saveTimerRef.current = window.setTimeout(() => {
+    summarySaveTimerRef.current = window.setTimeout(async () => {
       try {
-        const storageKey = buildStorageKey(userId, stepKey);
-        localStorage.setItem(storageKey, snap);
-        lastSavedSnapshotRef.current = snap;
-        setSaveState("saved");
+        await bulkUpsertUserStepMetrics([
+          {
+            user_id: userId,
+            step_key: stepKey,
+            metric_key: METRIC_KEYS.currentInvested,
+            value_num: Number(totalCurrentInvested) || 0,
+          },
+          {
+            user_id: userId,
+            step_key: stepKey,
+            metric_key: METRIC_KEYS.monthlyInvesting,
+            value_num: Number(totalMonthly) || 0,
+          },
+          {
+            user_id: userId,
+            step_key: stepKey,
+            metric_key: METRIC_KEYS.weightedAvgReturn,
+            value_num: Number(weightedAverageReturn) || 0,
+          },
+          {
+            user_id: userId,
+            step_key: stepKey,
+            metric_key: METRIC_KEYS.completed,
+            value_num: isDone ? 1 : 0,
+          },
+        ]);
 
+        setSaveState("saved");
         window.setTimeout(() => {
           setSaveState((prev) => (prev === "saved" ? "idle" : prev));
         }, 1200);
-      } catch {
+      } catch (e) {
+        console.error(e);
         setSaveState("error");
       }
     }, 500);
 
     return () => {
-      if (saveTimerRef.current) {
-        window.clearTimeout(saveTimerRef.current);
+      if (summarySaveTimerRef.current) {
+        window.clearTimeout(summarySaveTimerRef.current);
       }
     };
-  }, [rows, userId, stepKey]);
+  }, [
+    userId,
+    stepKey,
+    totalCurrentInvested,
+    totalMonthly,
+    weightedAverageReturn,
+    isDone,
+  ]);
 
   useEffect(() => {
     if (!whyOpen && !addOpen) return;
@@ -412,6 +497,18 @@ export default function InvestCard({
     };
   }, [whyOpen, addOpen]);
 
+  useEffect(() => {
+    return () => {
+      if (summarySaveTimerRef.current) {
+        window.clearTimeout(summarySaveTimerRef.current);
+      }
+
+      Object.values(rowPatchTimersRef.current).forEach((t) => {
+        window.clearTimeout(t);
+      });
+    };
+  }, []);
+
   const resetAddForm = () => {
     setSelectedPresetId("");
     setCustomName("");
@@ -421,30 +518,64 @@ export default function InvestCard({
     setAverageReturnInput("");
   };
 
-  const handleAddInvestment = () => {
+  const handleAddInvestment = async () => {
     const usingPreset = !!selectedPreset;
     const name = usingPreset ? selectedPreset.name : customName.trim();
 
     if (!name) return;
 
-    const newRow: InvestmentRow = {
-      id: uid(),
-      accountType,
-      name,
-      kind: usingPreset ? selectedPreset.kind : "Other",
-      risk: usingPreset ? selectedPreset.risk : "",
-      monthlyAmount: Number(monthlyAmount) || 0,
-      currentInvested: Number(currentInvested) || 0,
-      averageReturn:
-        averageReturnInput === "" ? "" : Number(averageReturnInput),
-      website: usingPreset ? selectedPreset.website : "",
-      presetId: usingPreset ? selectedPreset.id : undefined,
-      isCustom: !usingPreset,
-    };
+    try {
+      const created = await createUserInvestment({
+        user_id: userId,
+        step_key: stepKey,
+        account_type: accountType,
+        name,
+        kind: usingPreset ? selectedPreset.kind : "Other",
+        risk: usingPreset ? selectedPreset.risk : "",
+        monthly_amount: Number(monthlyAmount) || 0,
+        current_invested: Number(currentInvested) || 0,
+        average_return:
+          averageReturnInput === "" ? 0 : Number(averageReturnInput),
+        website: usingPreset ? selectedPreset.website : "",
+        preset_id: usingPreset ? selectedPreset.id : null,
+        is_custom: !usingPreset,
+      });
 
-    setRows((prev) => [newRow, ...prev]);
-    resetAddForm();
-    setAddOpen(false);
+      setRows((prev) => [rowFromApi(created), ...prev]);
+      resetAddForm();
+      setAddOpen(false);
+    } catch (e) {
+      console.error(e);
+      setSaveState("error");
+    }
+  };
+
+  const queuePatch = (
+    id: string,
+    patch: Partial<
+      Pick<
+        UiUserInvestment,
+        | "account_type"
+        | "name"
+        | "monthly_amount"
+        | "current_invested"
+        | "average_return"
+      >
+    >
+  ) => {
+    const existing = rowPatchTimersRef.current[id];
+    if (existing) {
+      window.clearTimeout(existing);
+    }
+
+    rowPatchTimersRef.current[id] = window.setTimeout(async () => {
+      try {
+        await patchUserInvestment(id, patch);
+      } catch (e) {
+        console.error(e);
+        setSaveState("error");
+      }
+    }, 450);
   };
 
   const updateRow = <K extends keyof InvestmentRow>(
@@ -458,10 +589,31 @@ export default function InvestCard({
         return { ...row, [key]: value };
       })
     );
+
+    if (key === "accountType") {
+      queuePatch(id, { account_type: value as string });
+    } else if (key === "name") {
+      queuePatch(id, { name: value as string });
+    } else if (key === "monthlyAmount") {
+      queuePatch(id, { monthly_amount: Number(value) || 0 });
+    } else if (key === "currentInvested") {
+      queuePatch(id, { current_invested: Number(value) || 0 });
+    } else if (key === "averageReturn") {
+      queuePatch(id, { average_return: value === "" ? 0 : Number(value) || 0 });
+    }
   };
 
-  const deleteRow = (id: string) => {
+  const handleDeleteRow = async (id: string) => {
+    const previous = rows;
     setRows((prev) => prev.filter((row) => row.id !== id));
+
+    try {
+      await deleteUserInvestment(id);
+    } catch (e) {
+      console.error(e);
+      setRows(previous);
+      setSaveState("error");
+    }
   };
 
   const defaultWhy = (
@@ -576,9 +728,9 @@ export default function InvestCard({
               ) : saveState === "saved" ? (
                 "Saved ✓"
               ) : saveState === "error" ? (
-                <span className="text-red-300">Couldn’t save locally</span>
+                <span className="text-red-300">Couldn’t save (check API)</span>
               ) : (
-                "Saved locally"
+                "Synced"
               )}
             </div>
           </div>
@@ -775,7 +927,7 @@ export default function InvestCard({
 
                       <td className="px-3 py-3">
                         <button
-                          onClick={() => deleteRow(row.id)}
+                          onClick={() => handleDeleteRow(row.id)}
                           className="inline-flex rounded-lg border border-red-300/20 bg-red-300/10 px-3 py-2 text-xs font-medium text-red-200 hover:bg-red-300/15"
                         >
                           Delete
