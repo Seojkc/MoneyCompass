@@ -193,91 +193,102 @@ export default function RoadmapTimeline() {
 
       {/* DOWN */}
       <main className="p-4 space-y-8">
-        
-        <StarterEmergencyFundCard
-          userId="demo-user-1"          // ✅ later replace with real logged-in user id
-          stepKey="starter-fund"        // ✅ matches roadmap_steps.key
-          initialTarget={2400}          // fallback if DB has no metric yet
-          initialSaved={900}            // fallback if DB has no metric yet
-          initialMonthlySave={200}      // fallback if DB has no metric yet
-          onCompletionChange={(done) => {
-            setCompleted((prev) => {
-              const next = new Set(prev);
-              if (done) next.add("starter-fund");
-              else next.delete("starter-fund");
-              return next;
-            });
-          }}
-        />
-        <EliminateHighInterestDebtCard
-          userId="demo-user-1"
-          stepKey="debt"
-          onCompletionChange={(done) => {
-            setCompleted((prev) => {
-              const next = new Set(prev);
-              if (done) next.add("debt");
-              else next.delete("debt");
-              return next;
-            });
-          }}
-        />
+  <section id="starter-fund" className="scroll-mt-24">
+    <StarterEmergencyFundCard
+      userId="demo-user-1"
+      stepKey="starter-fund"
+      initialTarget={2400}
+      initialSaved={900}
+      initialMonthlySave={200}
+      onCompletionChange={(done) => {
+        setCompleted((prev) => {
+          const next = new Set(prev);
+          if (done) next.add("starter-fund");
+          else next.delete("starter-fund");
+          return next;
+        });
+      }}
+    />
+  </section>
 
-        <InsuranceCard
-          userId="demo-user-1"
-          stepKey="insurance"
-          onCompletionChange={(done) => {
-            setCompleted((prev) => {
-              const next = new Set(prev);
-              if (done) next.add("insurance");
-              else next.delete("insurance");
-              return next;
-            });
-          }}
-        />
+  <section id="debt" className="scroll-mt-24">
+    <EliminateHighInterestDebtCard
+      userId="demo-user-1"
+      stepKey="debt"
+      onCompletionChange={(done) => {
+        setCompleted((prev) => {
+          const next = new Set(prev);
+          if (done) next.add("debt");
+          else next.delete("debt");
+          return next;
+        });
+      }}
+    />
+  </section>
 
-        <FullEmergencyFundCard
-          userId="demo-user-1"
-          stepKey="full-fund"
-          onCompletionChange={(done) => {
-            setCompleted((prev) => {
-              const next = new Set(prev);
-              if (done) next.add("full-fund");
-              else next.delete("full-fund");
-              return next;
-            });
-          }}
-        />
+  <section id="insurance" className="scroll-mt-24">
+    <InsuranceCard
+      userId="demo-user-1"
+      stepKey="insurance"
+      onCompletionChange={(done) => {
+        setCompleted((prev) => {
+          const next = new Set(prev);
+          if (done) next.add("insurance");
+          else next.delete("insurance");
+          return next;
+        });
+      }}
+    />
+  </section>
 
-        <AutomateSavingCard
-            userId="demo-user-1"
-            stepKey="automate"
-            initialGeneralSaved={0}
-            initialGeneralMonthly={0}
-            onCompletionChange={(done) => {
-              setCompleted((prev) => {
-                const next = new Set(prev);
-                if (done) next.add("automate");
-                else next.delete("automate");
-                return next;
-              });
-            }}
-        />
+  <section id="full-fund" className="scroll-mt-24">
+    <FullEmergencyFundCard
+      userId="demo-user-1"
+      stepKey="full-fund"
+      onCompletionChange={(done) => {
+        setCompleted((prev) => {
+          const next = new Set(prev);
+          if (done) next.add("full-fund");
+          else next.delete("full-fund");
+          return next;
+        });
+      }}
+    />
+  </section>
 
-        <InvestCard
-          userId="demo-user-1"
-          stepKey="invest"
-          onCompletionChange={(done) => {
-            setCompleted((prev) => {
-              const next = new Set(prev);
-              if (done) next.add("invest");
-              else next.delete("invest");
-              return next;
-            });
-          }}
-        />
+  <section id="automate" className="scroll-mt-24">
+    <AutomateSavingCard
+      userId="demo-user-1"
+      stepKey="automate"
+      initialGeneralSaved={0}
+      initialGeneralMonthly={0}
+      onCompletionChange={(done) => {
+        setCompleted((prev) => {
+          const next = new Set(prev);
+          if (done) next.add("automate");
+          else next.delete("automate");
+          return next;
+        });
+      }}
+    />
+  </section>
 
+  <section id="invest" className="scroll-mt-24">
+    <InvestCard
+      userId="demo-user-1"
+      stepKey="invest"
+      onCompletionChange={(done) => {
+        setCompleted((prev) => {
+          const next = new Set(prev);
+          if (done) next.add("invest");
+          else next.delete("invest");
+          return next;
+        });
+      }}
+    />
+  </section>
+</main>
 
-      </main>
     </div>
   );
 }
