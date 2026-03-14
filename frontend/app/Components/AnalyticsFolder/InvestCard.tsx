@@ -372,15 +372,26 @@ export default function InvestCard({
     });
   }, [totalCurrentInvested, totalMonthly, weightedAverageReturn]);
 
-  const isDone = rows.length > 0 && totalMonthly > 0;
+  const isDone = rows.length > 0 && (totalMonthly > 0 || totalCurrentInvested > 0);
 
-  useEffect(() => {
+  const hasReportedInitialStateRef = useRef(false);
+
+    useEffect(() => {
     if (!onCompletionChange) return;
-    if (lastDoneRef.current !== isDone) {
-      lastDoneRef.current = isDone;
-      onCompletionChange(isDone);
+    if (loading) return;
+
+    if (!hasReportedInitialStateRef.current) {
+        hasReportedInitialStateRef.current = true;
+        lastDoneRef.current = isDone;
+        onCompletionChange(isDone);
+        return;
     }
-  }, [isDone, onCompletionChange]);
+
+    if (lastDoneRef.current !== isDone) {
+        lastDoneRef.current = isDone;
+        onCompletionChange(isDone);
+    }
+    }, [loading, isDone, onCompletionChange]);
 
   useEffect(() => {
     let mounted = true;

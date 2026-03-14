@@ -8,7 +8,6 @@ steps = [
     {"key":"full-fund","title":"Full Emergency Fund","subtitle":"3–6 months essentials","step_order":4},
     {"key":"automate","title":"Automate Saving","subtitle":"Make it consistent","step_order":5},
     {"key":"invest","title":"Start Investing","subtitle":"Let money grow","step_order":6},
-    {"key":"grow","title":"Invest for Growth","subtitle":"Increase contributions","step_order":7},
     {"key":"income","title":"Increase Income","subtitle":"Fastest lever","step_order":8},
     {"key":"fi","title":"Financial Independence","subtitle":"Work becomes optional","step_order":9},
 ]

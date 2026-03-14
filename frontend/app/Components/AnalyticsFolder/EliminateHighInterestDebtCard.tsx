@@ -200,7 +200,12 @@ export default function EliminateHighInterestDebtCard({
       copy.sort((a, b) => a.balance - b.balance || b.interestPct - a.interestPct);
     }
     return copy;
+
   }, [debts, strategy]);
+
+  const estimatedBalanceNextYear = useMemo(() => {
+    return estimateTotalBalanceAfterMonths(debts, 12);
+  }, [debts]);
 
   // -------------------- TOTALS (sum debts table) --------------------
   const totals = useMemo(() => {
@@ -211,9 +216,8 @@ export default function EliminateHighInterestDebtCard({
 
   // ✅ Completed only if there was debt initially
   const isDone = useMemo(() => {
-    if ((Number(initialTotalBalance) || 0) <= 0) return false;
     return totals.totalBalance <= 0.00001;
-  }, [totals.totalBalance, initialTotalBalance]);
+  }, [totals.totalBalance]);
 
   // notify parent only when changed
   const lastDoneRef = useRef<boolean>(isDone);
@@ -644,9 +648,13 @@ export default function EliminateHighInterestDebtCard({
         </div>
 
         {/* Totals */}
-        <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
           <MiniMetric label="Total balance" value={`$${moneyFmt(totals.totalBalance)}`} />
           <MiniMetric label="Total payment" value={`$${moneyFmt(totals.totalPayment)}`} />
+          <MiniMetric
+            label={<span className="text-red-400">Est. total balance next year</span>}
+            value={`$${moneyFmt(estimatedBalanceNextYear)}`}
+          />
         </div>
 
         {/* Contribution line */}
@@ -817,7 +825,7 @@ export default function EliminateHighInterestDebtCard({
 
 /* ---------------- helpers UI ---------------- */
 
-function MiniMetric({ label, value }: { label: string; value: string }) {
+function MiniMetric({ label, value }: { label: React.ReactNode; value: string }) {
   return (
     <div className="rounded-lg border p-3 border-white/10 bg-white/5">
       <div className="text-xs text-white/50">{label}</div>
@@ -825,6 +833,33 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function estimateTotalBalanceAfterMonths(debts: Debt[], months: number) {
+  let working = debts.map((d) => ({
+    balance: Math.max(0, Number(d.balance) || 0),
+    interestPct: Math.max(0, Number(d.interestPct) || 0),
+    totalPayment: Math.max(0, Number(d.totalPayment) || 0),
+  }));
+
+  for (let i = 0; i < months; i++) {
+    working = working.map((d) => {
+      if (d.balance <= 0) return d;
+
+      const monthlyRate = d.interestPct / 100 / 12;
+      const interestForMonth = d.balance * monthlyRate;
+
+      const nextBalance = d.balance + interestForMonth - d.totalPayment;
+
+      return {
+        ...d,
+        balance: Math.max(0, nextBalance),
+      };
+    });
+  }
+
+  return working.reduce((sum, d) => sum + d.balance, 0);
+}
+
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
