@@ -10,34 +10,14 @@ import { listUserRoadmapSteps } from "@/lib/bridge";
 import AutomateSavingCard from "./AutomateSavingCard";
 import InvestCard from "./InvestCard";
 import IncreaseIncomeCard from "./IncreaseIncomeCard";
-import FinancialIndependenceCard from "./FinancialIndependence";
+import { CheckCircle2, Trophy } from "lucide-react";
 
 type Step = {
-  id?: string;
+  id: string;
   key: string;
   title: string;
   subtitle: string;
   step_order: number;
-};
-
-const USER_ID = "demo-user-1";
-
-const CORE_STEP_KEYS = [
-  "starter-fund",
-  "debt",
-  "insurance",
-  "full-fund",
-  "automate",
-  "invest",
-  "income",
-] as const;
-
-const FI_STEP: Step = {
-  id: "fi",
-  key: "fi",
-  title: "Financial Independence",
-  subtitle: "Work becomes optional",
-  step_order: 9,
 };
 
 export default function RoadmapTimeline() {
@@ -56,17 +36,18 @@ export default function RoadmapTimeline() {
         setLoadingSteps(true);
         setStepsError(null);
 
-        const apiSteps = await listUserRoadmapSteps(USER_ID, true);
+        const userId = "demo-user-1";
+        const apiSteps = await listUserRoadmapSteps(userId, true);
 
-        const normalized: Step[] = apiSteps
+        const normalized = apiSteps
           .map((s: any) => ({
             id: s.id,
             key: s.key,
             title: s.title,
             subtitle: s.subtitle,
             step_order: s.step_order,
+            progress: s.progress,
           }))
-          .filter((s: Step) => s.key !== "fi")
           .sort((a: Step, b: Step) => a.step_order - b.step_order);
 
         if (!mounted) return;
@@ -91,6 +72,15 @@ export default function RoadmapTimeline() {
     };
   }, []);
 
+  const isCompleted = (key: string) => completed.has(key);
+
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    setActive(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const updateCompleted = (key: string, done: boolean) => {
     setCompleted((prev) => {
       const next = new Set(prev);
@@ -98,25 +88,6 @@ export default function RoadmapTimeline() {
       else next.delete(key);
       return next;
     });
-  };
-
-  const isCompleted = (key: string) => completed.has(key);
-
-  const allCoreStepsCompleted = useMemo(() => {
-    return CORE_STEP_KEYS.every((key) => completed.has(key));
-  }, [completed]);
-
-  const visibleSteps = useMemo(() => {
-    const base = [...steps];
-    if (allCoreStepsCompleted) base.push(FI_STEP);
-    return base.sort((a, b) => a.step_order - b.step_order);
-  }, [steps, allCoreStepsCompleted]);
-
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    setActive(id);
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const journeyList = useMemo(() => {
@@ -150,16 +121,15 @@ export default function RoadmapTimeline() {
       );
     }
 
-    if (!visibleSteps.length) {
+    if (!steps.length) {
       return <div className="text-sm text-white/60">No roadmap steps found.</div>;
     }
 
     return (
       <div className="space-y-3">
-        {visibleSteps.map((s, idx) => {
+        {steps.map((s, idx) => {
           const activeNow = active === s.key;
           const done = isCompleted(s.key);
-          const isFi = s.key === "fi";
 
           return (
             <button
@@ -172,9 +142,7 @@ export default function RoadmapTimeline() {
                   className={[
                     "mt-1 h-3 w-3 rounded-full border transition-colors",
                     done
-                      ? isFi
-                        ? "border-yellow-400 bg-yellow-400"
-                        : "border-green-500 bg-green-500"
+                      ? "border-green-500 bg-green-500"
                       : activeNow
                       ? "border-white bg-white"
                       : "border-white/20 bg-white/10",
@@ -186,9 +154,7 @@ export default function RoadmapTimeline() {
                     className={[
                       "text-sm font-medium leading-tight transition-colors",
                       done
-                        ? isFi
-                          ? "text-yellow-300"
-                          : "text-green-400"
+                        ? "text-green-400"
                         : activeNow
                         ? "text-white"
                         : "text-white/70 group-hover:text-white",
@@ -204,7 +170,7 @@ export default function RoadmapTimeline() {
         })}
       </div>
     );
-  }, [visibleSteps, active, loadingSteps, stepsError, completed]);
+  }, [steps, active, loadingSteps, stepsError, completed]);
 
   return (
     <div className="w-full">
@@ -230,7 +196,7 @@ export default function RoadmapTimeline() {
       <main className="space-y-8 p-4">
         <section id="starter-fund" className="scroll-mt-24">
           <StarterEmergencyFundCard
-            userId={USER_ID}
+            userId="demo-user-1"
             stepKey="starter-fund"
             initialTarget={2400}
             initialSaved={900}
@@ -241,7 +207,7 @@ export default function RoadmapTimeline() {
 
         <section id="debt" className="scroll-mt-24">
           <EliminateHighInterestDebtCard
-            userId={USER_ID}
+            userId="demo-user-1"
             stepKey="debt"
             onCompletionChange={(done) => updateCompleted("debt", done)}
           />
@@ -249,7 +215,7 @@ export default function RoadmapTimeline() {
 
         <section id="insurance" className="scroll-mt-24">
           <InsuranceCard
-            userId={USER_ID}
+            userId="demo-user-1"
             stepKey="insurance"
             onCompletionChange={(done) => updateCompleted("insurance", done)}
           />
@@ -257,7 +223,7 @@ export default function RoadmapTimeline() {
 
         <section id="full-fund" className="scroll-mt-24">
           <FullEmergencyFundCard
-            userId={USER_ID}
+            userId="demo-user-1"
             stepKey="full-fund"
             onCompletionChange={(done) => updateCompleted("full-fund", done)}
           />
@@ -265,7 +231,7 @@ export default function RoadmapTimeline() {
 
         <section id="automate" className="scroll-mt-24">
           <AutomateSavingCard
-            userId={USER_ID}
+            userId="demo-user-1"
             stepKey="automate"
             initialGeneralSaved={0}
             initialGeneralMonthly={0}
@@ -275,7 +241,7 @@ export default function RoadmapTimeline() {
 
         <section id="invest" className="scroll-mt-24">
           <InvestCard
-            userId={USER_ID}
+            userId="demo-user-1"
             stepKey="invest"
             onCompletionChange={(done) => updateCompleted("invest", done)}
           />
@@ -283,18 +249,75 @@ export default function RoadmapTimeline() {
 
         <section id="income" className="scroll-mt-24">
           <IncreaseIncomeCard
-            userId={USER_ID}
+            userId="demo-user-1"
             stepKey="income"
             onCompletionChange={(done) => updateCompleted("income", done)}
           />
         </section>
 
-        
         <section id="fi" className="scroll-mt-24">
-          {allCoreStepsCompleted && (  <FinancialIndependenceCard /> )}
+          <FinancialIndependenceCard completed />
         </section>
-       
       </main>
+    </div>
+  );
+}
+
+function FinancialIndependenceCard({ completed = true }: { completed?: boolean }) {
+  return (
+    <div className="relative overflow-hidden rounded-[34px] border border-yellow-200/15 bg-[radial-gradient(circle_at_top,_rgba(255,220,120,0.18),_rgba(18,12,20,0.9)_34%,_rgba(7,7,14,0.98)_72%)] shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_8%,rgba(255,211,92,0.28),transparent_20%)]" />
+        <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(rgba(255,218,120,0.22)_1px,transparent_1px)] [background-size:22px_22px]" />
+        <div className="absolute left-1/2 top-[72px] h-px w-[76%] -translate-x-1/2 bg-gradient-to-r from-transparent via-yellow-200/40 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-yellow-200/10 to-transparent blur-2xl" />
+      </div>
+
+      <div className="relative mx-auto max-w-4xl px-6 py-10 text-center md:px-10 md:py-14">
+        <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-b from-yellow-200 to-yellow-500 shadow-[0_0_45px_rgba(255,214,102,0.4)] ring-4 ring-yellow-100/10">
+          <Trophy className="h-12 w-12 text-amber-900" strokeWidth={2.2} />
+        </div>
+
+        <h2 className="text-3xl font-semibold tracking-tight text-white md:text-5xl">
+          Financial Independence
+        </h2>
+
+        <p className="mt-3 text-lg text-white/70 md:text-2xl">
+          Work becomes optional
+        </p>
+
+        <div className="mx-auto mt-8 h-px w-full max-w-2xl bg-white/10" />
+
+        <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-white/75 md:text-3xl md:leading-[1.45]">
+          Congratulations! Everything is in place for you
+          <br className="hidden md:block" /> to live your best life.
+        </p>
+
+        <div className="mt-10 flex justify-center">
+          <div
+            className={[
+              "inline-flex items-center gap-3 rounded-full border px-6 py-3 text-xl font-semibold shadow-lg",
+              completed
+                ? "border-yellow-300/40 bg-yellow-300/10 text-white"
+                : "border-white/15 bg-white/5 text-white/70",
+            ].join(" ")}
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-lime-300 text-lime-900 shadow-[0_0_25px_rgba(163,230,53,0.45)]">
+              <CheckCircle2 className="h-6 w-6" strokeWidth={2.8} />
+            </span>
+            {completed ? "Completed" : "Locked"}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MiniCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-white/10 p-3">
+      <div className="text-xs text-white/50">{label}</div>
+      <div className="mt-1 text-base font-semibold text-white">{value}</div>
     </div>
   );
 }

@@ -6,8 +6,6 @@ import {
   listUserStepMetrics,
   upsertUserStepProgress,
   UiUserStepMetric,
-
-  // debts table APIs
   listUserDebts,
   createUserDebt,
   patchUserDebt,
@@ -21,19 +19,17 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 type Debt = {
   id: string;
   name: string;
-  interestPct: number; // %
+  interestPct: number;
   balance: number;
   totalPayment: number;
 };
 
 type Props = {
   userId: string;
-  stepKey?: string; // default "debt"
+  stepKey?: string;
   whyTitle?: string;
   whyContent?: React.ReactNode;
   onCompletionChange?: (done: boolean) => void;
-
-  // fallbacks if DB empty
   initialStrategy?: Strategy;
   initialContributing?: number;
   initialDebts?: Debt[];
@@ -47,9 +43,10 @@ const METRIC_KEYS = {
   initialTotalBalance: "initial_total_balance",
 } as const;
 
-// ---------- helpers ----------
 function moneyFmt(n: number) {
-  return (Number.isFinite(n) ? n : 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  return (Number.isFinite(n) ? n : 0).toLocaleString(undefined, {
+    maximumFractionDigits: 0,
+  });
 }
 
 function apiDebtToUi(d: UiUserDebt): Debt {
@@ -58,43 +55,35 @@ function apiDebtToUi(d: UiUserDebt): Debt {
     name: d.name,
     interestPct: Number((d as any).interest_pct ?? (d as any).interestPct) || 0,
     balance: Number(d.balance) || 0,
-    totalPayment: Number((d as any).total_payment ?? (d as any).totalPayment) || 0,
+    totalPayment:
+      Number((d as any).total_payment ?? (d as any).totalPayment) || 0,
   };
 }
 
 export default function EliminateHighInterestDebtCard({
   userId,
   stepKey = "debt",
-
   whyTitle = "Why eliminate high-interest debt?",
   whyContent,
-
   onCompletionChange,
-
   initialStrategy = "avalanche",
   initialContributing = 350,
   initialDebts = DEFAULT_DEBTS,
 }: Props) {
-  // WHY overlay state
   const [whyOpen, setWhyOpen] = useState(false);
 
-  // Loading/saving states
   const [loading, setLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const hydratedRef = useRef(false);
 
-  // ✅ baseline to prevent “empty table = completed”
   const [initialTotalBalance, setInitialTotalBalance] = useState<number>(0);
 
-  // Data
   const [strategy, setStrategy] = useState<Strategy>(initialStrategy);
   const [debts, setDebts] = useState<Debt[]>(initialDebts);
   const [contributing, setContributing] = useState<number>(initialContributing);
 
-  // Debounce map for patch calls (per debt row)
   const patchTimersRef = useRef<Record<string, number | null>>({});
 
-  // Add-dialog
   const [addOpen, setAddOpen] = useState(false);
   const [newDebt, setNewDebt] = useState<Omit<Debt, "id">>({
     name: "",
@@ -111,14 +100,16 @@ export default function EliminateHighInterestDebtCard({
     const mContrib = map.get(METRIC_KEYS.contributing)?.value_num;
 
     const nextStrategy: Strategy =
-      mStrategy === "snowball" || mStrategy === "avalanche" ? mStrategy : initialStrategy;
+      mStrategy === "snowball" || mStrategy === "avalanche"
+        ? mStrategy
+        : initialStrategy;
 
-    const nextContributing = mContrib != null ? Number(mContrib) || 0 : initialContributing;
+    const nextContributing =
+      mContrib != null ? Number(mContrib) || 0 : initialContributing;
 
     return { nextStrategy, nextContributing, map };
   };
 
-  // -------------------- LOAD (metrics + debts table) --------------------
   useEffect(() => {
     let mounted = true;
 
@@ -126,7 +117,6 @@ export default function EliminateHighInterestDebtCard({
       try {
         setLoading(true);
 
-        // 1) load metrics
         const metrics = await listUserStepMetrics({ userId, stepKey });
         if (!mounted) return;
 
@@ -134,7 +124,6 @@ export default function EliminateHighInterestDebtCard({
         setStrategy(nextStrategy);
         setContributing(nextContributing);
 
-        // 2) load debts from user_debts table
         const debtRows = await listUserDebts({ userId, stepKey });
         if (!mounted) return;
 
@@ -143,16 +132,11 @@ export default function EliminateHighInterestDebtCard({
         if (uiDebts.length) {
           setDebts(uiDebts);
         } else {
-          // keep fallbacks in UI (don’t auto-insert into DB)
           setDebts(initialDebts);
         }
 
-        hydratedRef.current = true;
-
-        // 3) baseline: set initial_total_balance ONCE if missing
         const initMetric = map.get(METRIC_KEYS.initialTotalBalance)?.value_num;
         const initFromDb = initMetric != null ? Number(initMetric) || 0 : 0;
-
         const hasInitial = map.has(METRIC_KEYS.initialTotalBalance);
 
         if (!hasInitial) {
@@ -170,11 +154,13 @@ export default function EliminateHighInterestDebtCard({
             },
           ]);
 
+          if (!mounted) return;
           setInitialTotalBalance(Number(totalBal) || 0);
         } else {
           setInitialTotalBalance(initFromDb);
         }
 
+        hydratedRef.current = true;
         setSaveState("idle");
       } catch {
         if (!mounted) return;
@@ -188,10 +174,8 @@ export default function EliminateHighInterestDebtCard({
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, stepKey]);
+  }, [userId, stepKey, initialContributing, initialDebts, initialStrategy]);
 
-  // -------------------- SORTING --------------------
   const sortedDebts = useMemo(() => {
     const copy = [...debts];
     if (strategy === "avalanche") {
@@ -200,36 +184,54 @@ export default function EliminateHighInterestDebtCard({
       copy.sort((a, b) => a.balance - b.balance || b.interestPct - a.interestPct);
     }
     return copy;
-
   }, [debts, strategy]);
 
   const estimatedBalanceNextYear = useMemo(() => {
     return estimateTotalBalanceAfterMonths(debts, 12);
   }, [debts]);
 
-  // -------------------- TOTALS (sum debts table) --------------------
   const totals = useMemo(() => {
     const totalBalance = debts.reduce((sum, d) => sum + (Number(d.balance) || 0), 0);
-    const totalPayment = debts.reduce((sum, d) => sum + (Number(d.totalPayment) || 0), 0);
+    const totalPayment = debts.reduce(
+      (sum, d) => sum + (Number(d.totalPayment) || 0),
+      0
+    );
     return { totalBalance, totalPayment };
   }, [debts]);
 
-  // ✅ Completed only if there was debt initially
-  const isDone = useMemo(() => {
-    return totals.totalBalance <= 0.00001;
-  }, [totals.totalBalance]);
+  const hasDebtContext = useMemo(() => {
+    return initialTotalBalance > 0 || debts.length > 0;
+  }, [initialTotalBalance, debts.length]);
 
-  // notify parent only when changed
-  const lastDoneRef = useRef<boolean>(isDone);
+  const isDone = useMemo(() => {
+    return hasDebtContext && totals.totalBalance <= 0.00001;
+  }, [hasDebtContext, totals.totalBalance]);
+
+  const progressPct = useMemo(() => {
+    const baseline = Number(initialTotalBalance) || 0;
+
+    if (baseline <= 0) {
+      return isDone ? 100 : 0;
+    }
+
+    return Math.max(
+      0,
+      Math.min(100, Math.round((1 - totals.totalBalance / baseline) * 100))
+    );
+  }, [initialTotalBalance, totals.totalBalance, isDone]);
+
+  const lastReportedDoneRef = useRef<boolean | null>(null);
+
   useEffect(() => {
     if (!onCompletionChange) return;
-    if (lastDoneRef.current !== isDone) {
-      lastDoneRef.current = isDone;
+    if (loading) return;
+
+    if (lastReportedDoneRef.current !== isDone) {
+      lastReportedDoneRef.current = isDone;
       onCompletionChange(isDone);
     }
-  }, [isDone, onCompletionChange]);
+  }, [isDone, loading, onCompletionChange]);
 
-  // months estimate
   const monthsToDebtFree = useMemo(() => {
     const c = Number(contributing) || 0;
     if (c <= 0) return null;
@@ -245,14 +247,17 @@ export default function EliminateHighInterestDebtCard({
 
   const microLine = useMemo(() => {
     if (!debts.length) return "Add a debt to start your payoff plan.";
-    if ((Number(contributing) || 0) <= 0) return "Set a monthly contribution to see your timeline.";
+    if ((Number(contributing) || 0) <= 0) {
+      return "Set a monthly contribution to see your timeline.";
+    }
     if (isDone) return "Debt-free. Your cash flow is now yours again.";
     if ((monthsToDebtFree ?? 0) <= 6) return "You’re very close — keep the momentum.";
-    if ((monthsToDebtFree ?? 0) <= 18) return "Consistent payments will change everything.";
+    if ((monthsToDebtFree ?? 0) <= 18) {
+      return "Consistent payments will change everything.";
+    }
     return "This is a long game — small wins, every month.";
   }, [debts.length, contributing, monthsToDebtFree, isDone]);
 
-  // -------------------- SAVE metrics ONLY (strategy + contributing + progress) --------------------
   const saveMetricsDebounced = useRef<number | null>(null);
 
   const queueSaveMetrics = (nextStrategy: Strategy, nextContributing: number) => {
@@ -267,15 +272,6 @@ export default function EliminateHighInterestDebtCard({
 
     saveMetricsDebounced.current = window.setTimeout(async () => {
       try {
-        const baseline = Number(initialTotalBalance) || 0;
-
-        const pct =
-          baseline <= 0
-            ? totals.totalBalance <= 0
-              ? 100
-              : 0
-            : Math.round((1 - totals.totalBalance / baseline) * 100);
-
         await bulkUpsertUserStepMetrics([
           {
             user_id: userId,
@@ -296,11 +292,13 @@ export default function EliminateHighInterestDebtCard({
         await upsertUserStepProgress({
           user_id: userId,
           step_key: stepKey,
-          progress: Math.max(0, Math.min(100, isDone ? 100 : pct)),
+          progress: progressPct,
         });
 
         setSaveState("saved");
-        window.setTimeout(() => setSaveState((p) => (p === "saved" ? "idle" : p)), 1200);
+        window.setTimeout(() => {
+          setSaveState((p) => (p === "saved" ? "idle" : p));
+        }, 1200);
       } catch {
         setSaveState("error");
       }
@@ -310,17 +308,19 @@ export default function EliminateHighInterestDebtCard({
   useEffect(() => {
     if (loading) return;
     queueSaveMetrics(strategy, contributing);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [strategy, contributing, totals.totalBalance, isDone, initialTotalBalance]);
+  }, [loading, strategy, contributing, totals.totalBalance, progressPct]);
 
   useEffect(() => {
     return () => {
-      if (saveMetricsDebounced.current) window.clearTimeout(saveMetricsDebounced.current);
-      Object.values(patchTimersRef.current).forEach((t) => t && window.clearTimeout(t));
+      if (saveMetricsDebounced.current) {
+        window.clearTimeout(saveMetricsDebounced.current);
+      }
+      Object.values(patchTimersRef.current).forEach((t) => {
+        if (t) window.clearTimeout(t);
+      });
     };
   }, []);
 
-  // -------------------- DEBT CRUD (table row save) --------------------
   const queuePatchDebt = (id: string, patch: Partial<Debt>) => {
     if (!hydratedRef.current) return;
 
@@ -333,13 +333,21 @@ export default function EliminateHighInterestDebtCard({
 
         await patchUserDebt(id, {
           ...(patch.name !== undefined ? { name: patch.name } : {}),
-          ...(patch.interestPct !== undefined ? { interest_pct: Number(patch.interestPct) || 0 } : {}),
-          ...(patch.balance !== undefined ? { balance: Number(patch.balance) || 0 } : {}),
-          ...(patch.totalPayment !== undefined ? { total_payment: Number(patch.totalPayment) || 0 } : {}),
+          ...(patch.interestPct !== undefined
+            ? { interest_pct: Number(patch.interestPct) || 0 }
+            : {}),
+          ...(patch.balance !== undefined
+            ? { balance: Number(patch.balance) || 0 }
+            : {}),
+          ...(patch.totalPayment !== undefined
+            ? { total_payment: Number(patch.totalPayment) || 0 }
+            : {}),
         });
 
         setSaveState("saved");
-        window.setTimeout(() => setSaveState((p) => (p === "saved" ? "idle" : p)), 900);
+        window.setTimeout(() => {
+          setSaveState((p) => (p === "saved" ? "idle" : p));
+        }, 900);
       } catch {
         setSaveState("error");
       }
@@ -358,7 +366,9 @@ export default function EliminateHighInterestDebtCard({
       setSaveState("saving");
       await deleteUserDebt(id);
       setSaveState("saved");
-      window.setTimeout(() => setSaveState((p) => (p === "saved" ? "idle" : p)), 900);
+      window.setTimeout(() => {
+        setSaveState((p) => (p === "saved" ? "idle" : p));
+      }, 900);
     } catch {
       setSaveState("error");
     }
@@ -390,26 +400,28 @@ export default function EliminateHighInterestDebtCard({
       setAddOpen(false);
 
       setSaveState("saved");
-      window.setTimeout(() => setSaveState((p) => (p === "saved" ? "idle" : p)), 900);
+      window.setTimeout(() => {
+        setSaveState((p) => (p === "saved" ? "idle" : p));
+      }, 900);
     } catch {
       setSaveState("error");
     }
   };
 
-  // Close on ESC
   useEffect(() => {
     if (!whyOpen && !addOpen) return;
+
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setWhyOpen(false);
         setAddOpen(false);
       }
     };
+
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [whyOpen, addOpen]);
 
-  // Lock body scroll when overlay open
   useEffect(() => {
     if (!whyOpen && !addOpen) return;
     const prev = document.body.style.overflow;
@@ -420,27 +432,28 @@ export default function EliminateHighInterestDebtCard({
   }, [whyOpen, addOpen]);
 
   const defaultWhy = (
-    <div className="space-y-6 text-sm md:text-base text-white/85 max-h-[65vh] overflow-y-auto pr-2">
+    <div className="max-h-[65vh] space-y-6 overflow-y-auto pr-2 text-sm text-white/85 md:text-base">
       <div className="space-y-3">
-        <h3 className="text-xl md:text-2xl font-semibold text-white">
+        <h3 className="text-xl font-semibold text-white md:text-2xl">
           💳 Why eliminating high-interest debt changes everything
         </h3>
-        <p className="text-white/80 leading-relaxed">
-          High-interest debt grows even when you do nothing. Interest is the “silent bill” that keeps charging you
-          for the past. Paying debt down is like buying back your monthly freedom.
+        <p className="leading-relaxed text-white/80">
+          High-interest debt grows even when you do nothing. Interest is the “silent
+          bill” that keeps charging you for the past. Paying debt down is like buying
+          back your monthly freedom.
         </p>
       </div>
 
       <div className="rounded-xl border border-rose-300/20 bg-rose-300/10 p-3 text-rose-200">
         <div className="font-semibold">⚠️ Interest is a money leak</div>
         <div className="mt-1 text-white/80">
-          If you keep high-interest balances, a portion of every paycheck disappears into interest before it can
-          build your savings, investing, or life goals.
+          If you keep high-interest balances, a portion of every paycheck disappears
+          into interest before it can build your savings, investing, or life goals.
         </div>
       </div>
 
       <div className="space-y-3">
-        <div className="text-white font-semibold">📉 What interest can cost (approx.)</div>
+        <div className="font-semibold text-white">📉 What interest can cost (approx.)</div>
 
         <div className="overflow-hidden rounded-xl border border-white/10">
           <div className="grid grid-cols-4 bg-white/5 text-xs text-white/60">
@@ -474,27 +487,31 @@ export default function EliminateHighInterestDebtCard({
         </div>
 
         <div className="text-xs text-white/55">
-          *Simple estimate (APR ÷ 12). Real interest depends on compounding and your payments — but the “money leak”
-          is real.
+          *Simple estimate (APR ÷ 12). Real interest depends on compounding and your
+          payments — but the money leak is real.
         </div>
       </div>
 
-      <div className="rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 text-amber-200 font-medium">
+      <div className="rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 font-medium text-amber-200">
         👉 Paying off a 20% debt is like a guaranteed 20% return — with zero market risk.
       </div>
 
       <div className="space-y-3">
-        <div className="text-white font-semibold">🧠 Choose a strategy you’ll stick to</div>
+        <div className="font-semibold text-white">🧠 Choose a strategy you’ll stick to</div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="rounded-xl border border-white/10 bg-white/5 p-3">
             <div className="font-semibold text-white">⚡ Avalanche</div>
-            <div className="mt-1 text-white/75">Highest interest first → saves the most money overall.</div>
+            <div className="mt-1 text-white/75">
+              Highest interest first → saves the most money overall.
+            </div>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-white/5 p-3">
             <div className="font-semibold text-white">🏔 Snowball</div>
-            <div className="mt-1 text-white/75">Lowest balance first → faster wins → easier motivation.</div>
+            <div className="mt-1 text-white/75">
+              Lowest balance first → faster wins → easier motivation.
+            </div>
           </div>
         </div>
 
@@ -502,7 +519,7 @@ export default function EliminateHighInterestDebtCard({
       </div>
 
       <div className="space-y-3">
-        <div className="text-white font-semibold">🛡 How to avoid future unnecessary high debt</div>
+        <div className="font-semibold text-white">🛡 How to avoid future unnecessary high debt</div>
         <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-emerald-200">
           <ul className="space-y-2">
             <li>✅ Don’t finance “wants” if you can’t repay this month.</li>
@@ -513,20 +530,23 @@ export default function EliminateHighInterestDebtCard({
         </div>
       </div>
 
-      <div className="pt-3 border-t border-white/10 space-y-2">
+      <div className="space-y-2 border-t border-white/10 pt-3">
         <p className="text-lg font-semibold text-white">🧭 Debt freedom is cash flow + peace of mind.</p>
-        <p className="text-white/70 italic text-sm">Start small, but start today — momentum compounds too.</p>
+        <p className="text-sm italic text-white/70">
+          Start small, but start today — momentum compounds too.
+        </p>
       </div>
     </div>
   );
 
   return (
     <>
-      <section className="rounded-xl border border-white/10 bg-black/20 backdrop-blur p-4 md:p-5">
-        {/* Header */}
+      <section className="rounded-xl border border-white/10 bg-black/20 p-4 backdrop-blur md:p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="font-semibold text-white fs-1 text-3xl">Eliminate High-Interest Debt</h1>
+            <h1 className="fs-1 text-3xl font-semibold text-white">
+              Eliminate High-Interest Debt
+            </h1>
 
             <div className="mt-1 text-xs text-white/50">
               {loading
@@ -543,44 +563,46 @@ export default function EliminateHighInterestDebtCard({
 
           <button
             onClick={() => setWhyOpen(true)}
-            className="text-lg text-white/80 hover:text-white rounded-lg border border-white/10 bg-white/5 px-3 py-1.5"
+            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-lg text-white/80 hover:text-white"
           >
             Why? <span className="ml-1">›</span>
           </button>
         </div>
 
-        {/* Toggle bar */}
         <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-2">
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setStrategy("avalanche")}
               className={[
-                "rounded-lg px-3 py-2 text-sm font-semibold border transition",
+                "rounded-lg border px-3 py-2 text-sm font-semibold transition",
                 strategy === "avalanche"
                   ? "border-white/20 bg-white/10 text-white"
                   : "border-white/10 bg-transparent text-white/60 hover:text-white",
               ].join(" ")}
             >
               Avalanche
-              <div className="text-[11px] font-normal text-white/50">Start with highest interest</div>
+              <div className="text-[11px] font-normal text-white/50">
+                Start with highest interest
+              </div>
             </button>
 
             <button
               onClick={() => setStrategy("snowball")}
               className={[
-                "rounded-lg px-3 py-2 text-sm font-semibold border transition",
+                "rounded-lg border px-3 py-2 text-sm font-semibold transition",
                 strategy === "snowball"
                   ? "border-white/20 bg-white/10 text-white"
                   : "border-white/10 bg-transparent text-white/60 hover:text-white",
               ].join(" ")}
             >
               Snowball
-              <div className="text-[11px] font-normal text-white/50">Start with lowest balance</div>
+              <div className="text-[11px] font-normal text-white/50">
+                Start with lowest balance
+              </div>
             </button>
           </div>
         </div>
 
-        {/* Table */}
         <div className="mt-5 overflow-hidden rounded-xl border border-white/10">
           <div className="grid grid-cols-[1.4fr_.7fr_.8fr_.9fr_.3fr] gap-0 bg-white/5 text-xs text-white/60">
             <div className="px-3 py-2">Payment name</div>
@@ -592,10 +614,13 @@ export default function EliminateHighInterestDebtCard({
 
           <div className="divide-y divide-white/10">
             {sortedDebts.map((d) => (
-              <div key={d.id} className="grid grid-cols-[1.4fr_.7fr_.8fr_.9fr_.3fr] gap-0 bg-black/10">
+              <div
+                key={d.id}
+                className="grid grid-cols-[1.4fr_.7fr_.8fr_.9fr_.3fr] gap-0 bg-black/10"
+              >
                 <div className="px-3 py-2">
                   <input
-                    className="w-full bg-transparent outline-none text-sm md:text-base font-semibold text-white placeholder:text-white/30"
+                    className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/30 md:text-base"
                     value={d.name}
                     onChange={(e) => updateDebt(d.id, { name: e.target.value })}
                     placeholder="Debt name"
@@ -612,14 +637,20 @@ export default function EliminateHighInterestDebtCard({
                 </div>
 
                 <div className="px-3 py-2">
-                  <InlineMoney value={d.balance} onChange={(n) => updateDebt(d.id, { balance: n })} />
+                  <InlineMoney
+                    value={d.balance}
+                    onChange={(n) => updateDebt(d.id, { balance: n })}
+                  />
                 </div>
 
                 <div className="px-3 py-2">
-                  <InlineMoney value={d.totalPayment} onChange={(n) => updateDebt(d.id, { totalPayment: n })} />
+                  <InlineMoney
+                    value={d.totalPayment}
+                    onChange={(n) => updateDebt(d.id, { totalPayment: n })}
+                  />
                 </div>
 
-                <div className="px-3 py-2 flex justify-end">
+                <div className="flex justify-end px-3 py-2">
                   <button
                     onClick={() => removeDebt(d.id)}
                     className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/70 hover:text-white"
@@ -633,11 +664,13 @@ export default function EliminateHighInterestDebtCard({
             ))}
 
             {!sortedDebts.length && (
-              <div className="p-4 text-sm text-white/60 bg-black/10">No debts yet. Add one to begin.</div>
+              <div className="bg-black/10 p-4 text-sm text-white/60">
+                No debts yet. Add one to begin.
+              </div>
             )}
           </div>
 
-          <div className="p-3 bg-black/10 border-t border-white/10">
+          <div className="border-t border-white/10 bg-black/10 p-3">
             <button
               onClick={openAdd}
               className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white/80 hover:text-white"
@@ -647,8 +680,7 @@ export default function EliminateHighInterestDebtCard({
           </div>
         </div>
 
-        {/* Totals */}
-        <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
           <MiniMetric label="Total balance" value={`$${moneyFmt(totals.totalBalance)}`} />
           <MiniMetric label="Total payment" value={`$${moneyFmt(totals.totalPayment)}`} />
           <MiniMetric
@@ -657,15 +689,28 @@ export default function EliminateHighInterestDebtCard({
           />
         </div>
 
-        {/* Contribution line */}
+        {/* <div className="mt-4">
+          <div className="mb-2 flex items-center justify-between text-xs text-white/60">
+            <span>Debt payoff progress</span>
+            <span>{progressPct}%</span>
+          </div>
+
+          <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-green-500 transition-all duration-300"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+        </div> */}
+
         <div className="mt-6 border-t border-white/10 pt-4">
-          <div className="text-sm md:text-base text-white/85 flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-white/85 md:text-base">
             <span className="font-semibold">Contributing</span>
 
             <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2 py-1">
-              <span className="text-white/50 text-sm">$</span>
+              <span className="text-sm text-white/50">$</span>
               <input
-                className="w-14 bg-transparent outline-none text-right text-sm md:text-base font-semibold text-white"
+                className="w-14 bg-transparent text-right text-sm font-semibold text-white outline-none md:text-base"
                 type="number"
                 value={contributing}
                 onChange={(e) => setContributing(Number(e.target.value || 0))}
@@ -684,8 +729,10 @@ export default function EliminateHighInterestDebtCard({
 
             <span
               className={[
-                "ml-1 text-xs rounded-full border px-2 py-1",
-                isDone ? "border-green-500/60 text-green-300" : "border-white/15 text-white/50",
+                "ml-1 rounded-full border px-2 py-1 text-xs",
+                isDone
+                  ? "border-green-500/60 text-green-300"
+                  : "border-white/15 text-white/50",
               ].join(" ")}
             >
               {isDone ? "Completed ✓" : "In progress"}
@@ -693,22 +740,33 @@ export default function EliminateHighInterestDebtCard({
           </div>
 
           <div className="mt-2 flex items-center gap-2 text-sm text-emerald-200/70">
-            <span className="w-2 h-2 rounded-full bg-emerald-200/70" />
+            <span className="h-2 w-2 rounded-full bg-emerald-200/70" />
             {microLine}
           </div>
         </div>
       </section>
 
-      {/* WHY OVERLAY */}
       {whyOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-          <button aria-label="Close overlay" onClick={() => setWhyOpen(false)} className="absolute inset-0 bg-black/60" />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            aria-label="Close overlay"
+            onClick={() => setWhyOpen(false)}
+            className="absolute inset-0 bg-black/60"
+          />
 
-          <div className="relative w-full max-w-2xl rounded-2xl border border-white/10 bg-zinc-950/90 backdrop-blur p-4 md:p-6 shadow-2xl">
+          <div className="relative w-full max-w-2xl rounded-2xl border border-white/10 bg-zinc-950/90 p-4 shadow-2xl backdrop-blur md:p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-white font-semibold text-lg md:text-xl">{whyTitle}</div>
-                <div className="mt-1 text-white/60 text-xs md:text-sm">Quick explanation (tap outside to close).</div>
+                <div className="text-lg font-semibold text-white md:text-xl">
+                  {whyTitle}
+                </div>
+                <div className="mt-1 text-xs text-white/60 md:text-sm">
+                  Quick explanation (tap outside to close).
+                </div>
               </div>
 
               <button
@@ -717,7 +775,12 @@ export default function EliminateHighInterestDebtCard({
                 aria-label="Close"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-90">
-                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path
+                    d="M18 6L6 18M6 6L18 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </button>
             </div>
@@ -736,16 +799,27 @@ export default function EliminateHighInterestDebtCard({
         </div>
       )}
 
-      {/* ADD DEBT DIALOG */}
       {addOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-          <button aria-label="Close dialog" onClick={() => setAddOpen(false)} className="absolute inset-0 bg-black/60" />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            aria-label="Close dialog"
+            onClick={() => setAddOpen(false)}
+            className="absolute inset-0 bg-black/60"
+          />
 
-          <div className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-zinc-950/90 backdrop-blur p-4 md:p-6 shadow-2xl">
+          <div className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-zinc-950/90 p-4 shadow-2xl backdrop-blur md:p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-white font-semibold text-lg md:text-xl">Add new debt</div>
-                <div className="mt-1 text-white/60 text-xs md:text-sm">Enter details — you can edit anytime later.</div>
+                <div className="text-lg font-semibold text-white md:text-xl">
+                  Add new debt
+                </div>
+                <div className="mt-1 text-xs text-white/60 md:text-sm">
+                  Enter details — you can edit anytime later.
+                </div>
               </div>
 
               <button
@@ -754,7 +828,12 @@ export default function EliminateHighInterestDebtCard({
                 aria-label="Close"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-90">
-                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path
+                    d="M18 6L6 18M6 6L18 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </button>
             </div>
@@ -769,14 +848,19 @@ export default function EliminateHighInterestDebtCard({
                 />
               </Field>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <Field label="Interest %">
                   <input
                     className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none"
                     type="number"
                     min={0}
                     value={newDebt.interestPct}
-                    onChange={(e) => setNewDebt((p) => ({ ...p, interestPct: Number(e.target.value || 0) }))}
+                    onChange={(e) =>
+                      setNewDebt((p) => ({
+                        ...p,
+                        interestPct: Number(e.target.value || 0),
+                      }))
+                    }
                   />
                 </Field>
 
@@ -786,7 +870,12 @@ export default function EliminateHighInterestDebtCard({
                     type="number"
                     min={0}
                     value={newDebt.balance}
-                    onChange={(e) => setNewDebt((p) => ({ ...p, balance: Number(e.target.value || 0) }))}
+                    onChange={(e) =>
+                      setNewDebt((p) => ({
+                        ...p,
+                        balance: Number(e.target.value || 0),
+                      }))
+                    }
                   />
                 </Field>
 
@@ -796,7 +885,12 @@ export default function EliminateHighInterestDebtCard({
                     type="number"
                     min={0}
                     value={newDebt.totalPayment}
-                    onChange={(e) => setNewDebt((p) => ({ ...p, totalPayment: Number(e.target.value || 0) }))}
+                    onChange={(e) =>
+                      setNewDebt((p) => ({
+                        ...p,
+                        totalPayment: Number(e.target.value || 0),
+                      }))
+                    }
                   />
                 </Field>
               </div>
@@ -823,11 +917,9 @@ export default function EliminateHighInterestDebtCard({
   );
 }
 
-/* ---------------- helpers UI ---------------- */
-
 function MiniMetric({ label, value }: { label: React.ReactNode; value: string }) {
   return (
-    <div className="rounded-lg border p-3 border-white/10 bg-white/5">
+    <div className="rounded-lg border border-white/10 bg-white/5 p-3">
       <div className="text-xs text-white/50">{label}</div>
       <div className="mt-1 text-base font-semibold text-white">{value}</div>
     </div>
@@ -847,7 +939,6 @@ function estimateTotalBalanceAfterMonths(debts: Debt[], months: number) {
 
       const monthlyRate = d.interestPct / 100 / 12;
       const interestForMonth = d.balance * monthlyRate;
-
       const nextBalance = d.balance + interestForMonth - d.totalPayment;
 
       return {
@@ -860,11 +951,10 @@ function estimateTotalBalanceAfterMonths(debts: Debt[], months: number) {
   return working.reduce((sum, d) => sum + d.balance, 0);
 }
 
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-xs text-white/60 mb-1">{label}</div>
+      <div className="mb-1 text-xs text-white/60">{label}</div>
       {children}
     </div>
   );
@@ -873,9 +963,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function InlineMoney({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
     <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2 py-1">
-      <span className="text-white/50 text-sm">$</span>
+      <span className="text-sm text-white/50">$</span>
       <input
-        className="w-24 bg-transparent outline-none text-right text-sm md:text-base font-semibold text-white"
+        className="w-24 bg-transparent text-right text-sm font-semibold text-white outline-none md:text-base"
         type="number"
         min={0}
         value={value}
@@ -899,15 +989,16 @@ function InlineNumber({
   return (
     <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2 py-1">
       <input
-        className={[widthClass, "bg-transparent outline-none text-right text-sm md:text-base font-semibold text-white"].join(
-          " "
-        )}
+        className={[
+          widthClass,
+          "bg-transparent text-right text-sm font-semibold text-white outline-none md:text-base",
+        ].join(" ")}
         type="number"
         min={0}
         value={value}
         onChange={(e) => onChange(Number(e.target.value || 0))}
       />
-      {suffix ? <span className="ml-1 text-white/50 text-sm">{suffix}</span> : null}
+      {suffix ? <span className="ml-1 text-sm text-white/50">{suffix}</span> : null}
     </span>
   );
 }
