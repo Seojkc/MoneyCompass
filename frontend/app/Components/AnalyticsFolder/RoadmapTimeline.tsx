@@ -9,6 +9,8 @@ import FullEmergencyFundCard from "./FullEmergencyFundCard";
 import { listUserRoadmapSteps } from "@/lib/bridge";
 import AutomateSavingCard from "./AutomateSavingCard";
 import InvestCard from "./InvestCard";
+import IncreaseIncomeCard from "./IncreaseIncomeCard";
+
 
 type Step = {
   id: string;
@@ -286,6 +288,24 @@ export default function RoadmapTimeline() {
         });
       }}
     />
+  </section>
+
+
+  <section id="income" className="scroll-mt-24">
+
+    <IncreaseIncomeCard
+      userId="demo-user-1"
+      stepKey="income"
+      onCompletionChange={(done) => {
+        setCompleted((prev) => {
+          const next = new Set(prev);
+          if (done) next.add("income");
+          else next.delete("income");
+          return next;
+        });
+      }}
+    />
+
   </section>
 </main>
 
