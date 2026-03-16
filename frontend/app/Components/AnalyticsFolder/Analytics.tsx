@@ -6,12 +6,12 @@ import GraphsPanel from './GraphsPanel';
 import RoadmapTimeline from './RoadmapTimeline';
 
 interface AnalyticsProps {
-    // Add your props here
+   userId: string;
 }
 
 type RangeKey = "3M" | "6M" | "1Y";
 
-export const Analytics: React.FC<AnalyticsProps> = ({}) => {
+export const Analytics: React.FC<AnalyticsProps> = ({userId}) => {
 
 
     const [range, setRange] = useState<RangeKey>("3M");
@@ -23,12 +23,12 @@ export const Analytics: React.FC<AnalyticsProps> = ({}) => {
 
             <div className="secondpart-container">
                 <div className="quick-add-container">
-                    <SummaryCards range={range} onRangeChange={setRange} />
+                    <SummaryCards  userId={userId} range={range} onRangeChange={setRange} />
                 </div>
         
                 <div className="TransactionTable-container">
                     <div className='d-flex'>
-                        <GraphsPanel range={range} />
+                        <GraphsPanel userId={userId}  range={range} />
                     </div>
                     
                    
@@ -38,7 +38,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({}) => {
             <div className="thirdpart-container p-4">
                     <h1 className='main-heading'>Journey Progress</h1>
                     <h3>How to become Financial independent ?</h3>
-                    <RoadmapTimeline />
+                    <RoadmapTimeline  userId={userId}/>
                 </div>
         </div>
     );

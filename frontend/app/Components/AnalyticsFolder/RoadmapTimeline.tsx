@@ -20,7 +20,9 @@ type Step = {
   step_order: number;
 };
 
-const USER_ID = "demo-user-1";
+type Props = {
+  userId: string;
+};
 
 const CORE_STEP_KEYS = [
   "starter-fund",
@@ -40,7 +42,7 @@ const FI_STEP: Step = {
   step_order: 9,
 };
 
-export default function RoadmapTimeline() {
+export default function RoadmapTimeline({ userId }: Props) {
   const [steps, setSteps] = useState<Step[]>([]);
   const [loadingSteps, setLoadingSteps] = useState(true);
   const [stepsError, setStepsError] = useState<string | null>(null);
@@ -51,12 +53,12 @@ export default function RoadmapTimeline() {
   useEffect(() => {
     let mounted = true;
 
-    (async () => {
+    const loadSteps = async () => {
       try {
         setLoadingSteps(true);
         setStepsError(null);
 
-        const apiSteps = await listUserRoadmapSteps(USER_ID, true);
+        const apiSteps = await listUserRoadmapSteps(userId, true);
 
         const normalized: Step[] = apiSteps
           .map((s: any) => ({
@@ -72,7 +74,6 @@ export default function RoadmapTimeline() {
         if (!mounted) return;
 
         setSteps(normalized);
-
         setActive((prev) => {
           const exists = normalized.some((x: Step) => x.key === prev);
           return exists ? prev : normalized[0]?.key ?? "starter-fund";
@@ -84,12 +85,16 @@ export default function RoadmapTimeline() {
         if (!mounted) return;
         setLoadingSteps(false);
       }
-    })();
+    };
+
+    if (userId) {
+      loadSteps();
+    }
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [userId]);
 
   const updateCompleted = (key: string, done: boolean) => {
     setCompleted((prev) => {
@@ -143,8 +148,7 @@ export default function RoadmapTimeline() {
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
           {stepsError}
           <div className="mt-2 text-xs text-red-200/70">
-            Tip: confirm FastAPI has <code>/roadmap-steps</code> in{" "}
-            <code>http://localhost:8000/docs</code>
+            Tip: confirm roadmap API is working for the logged-in user.
           </div>
         </div>
       );
@@ -176,8 +180,8 @@ export default function RoadmapTimeline() {
                         ? "border-yellow-400 bg-yellow-400"
                         : "border-green-500 bg-green-500"
                       : activeNow
-                      ? "border-white bg-white"
-                      : "border-white/20 bg-white/10",
+                        ? "border-white bg-white"
+                        : "border-white/20 bg-white/10",
                   ].join(" ")}
                 />
 
@@ -190,8 +194,8 @@ export default function RoadmapTimeline() {
                           ? "text-yellow-300"
                           : "text-green-400"
                         : activeNow
-                        ? "text-white"
-                        : "text-white/70 group-hover:text-white",
+                          ? "text-white"
+                          : "text-white/70 group-hover:text-white",
                     ].join(" ")}
                   >
                     {idx + 1}. {s.title}
@@ -230,7 +234,7 @@ export default function RoadmapTimeline() {
       <main className="space-y-8 p-4">
         <section id="starter-fund" className="scroll-mt-24">
           <StarterEmergencyFundCard
-            userId={USER_ID}
+            userId={userId}
             stepKey="starter-fund"
             initialTarget={2400}
             initialSaved={900}
@@ -241,7 +245,7 @@ export default function RoadmapTimeline() {
 
         <section id="debt" className="scroll-mt-24">
           <EliminateHighInterestDebtCard
-            userId={USER_ID}
+            userId={userId}
             stepKey="debt"
             onCompletionChange={(done) => updateCompleted("debt", done)}
           />
@@ -249,7 +253,7 @@ export default function RoadmapTimeline() {
 
         <section id="insurance" className="scroll-mt-24">
           <InsuranceCard
-            userId={USER_ID}
+            userId={userId}
             stepKey="insurance"
             onCompletionChange={(done) => updateCompleted("insurance", done)}
           />
@@ -257,7 +261,7 @@ export default function RoadmapTimeline() {
 
         <section id="full-fund" className="scroll-mt-24">
           <FullEmergencyFundCard
-            userId={USER_ID}
+            userId={userId}
             stepKey="full-fund"
             onCompletionChange={(done) => updateCompleted("full-fund", done)}
           />
@@ -265,7 +269,7 @@ export default function RoadmapTimeline() {
 
         <section id="automate" className="scroll-mt-24">
           <AutomateSavingCard
-            userId={USER_ID}
+            userId={userId}
             stepKey="automate"
             initialGeneralSaved={0}
             initialGeneralMonthly={0}
@@ -275,7 +279,7 @@ export default function RoadmapTimeline() {
 
         <section id="invest" className="scroll-mt-24">
           <InvestCard
-            userId={USER_ID}
+            userId={userId}
             stepKey="invest"
             onCompletionChange={(done) => updateCompleted("invest", done)}
           />
@@ -283,17 +287,15 @@ export default function RoadmapTimeline() {
 
         <section id="income" className="scroll-mt-24">
           <IncreaseIncomeCard
-            userId={USER_ID}
+            userId={userId}
             stepKey="income"
             onCompletionChange={(done) => updateCompleted("income", done)}
           />
         </section>
 
-        
         <section id="fi" className="scroll-mt-24">
-          {allCoreStepsCompleted && (  <FinancialIndependenceCard /> )}
+          {allCoreStepsCompleted && <FinancialIndependenceCard userId={userId}/>}
         </section>
-       
       </main>
     </div>
   );

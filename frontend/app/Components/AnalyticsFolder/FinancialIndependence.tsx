@@ -20,7 +20,11 @@ type Step = {
   step_order: number;
 };
 
-export default function RoadmapTimeline() {
+type Props = {
+  userId: string;
+};
+
+export default function RoadmapTimeline( { userId }: Props) {
   const [steps, setSteps] = useState<Step[]>([]);
   const [loadingSteps, setLoadingSteps] = useState(true);
   const [stepsError, setStepsError] = useState<string | null>(null);
@@ -36,7 +40,7 @@ export default function RoadmapTimeline() {
         setLoadingSteps(true);
         setStepsError(null);
 
-        const userId = "demo-user-1";
+       
         const apiSteps = await listUserRoadmapSteps(userId, true);
 
         const normalized = apiSteps
@@ -196,7 +200,7 @@ export default function RoadmapTimeline() {
       <main className="space-y-8 p-4">
         <section id="starter-fund" className="scroll-mt-24">
           <StarterEmergencyFundCard
-            userId="demo-user-1"
+            userId={userId}
             stepKey="starter-fund"
             initialTarget={2400}
             initialSaved={900}
@@ -207,7 +211,7 @@ export default function RoadmapTimeline() {
 
         <section id="debt" className="scroll-mt-24">
           <EliminateHighInterestDebtCard
-            userId="demo-user-1"
+            userId={userId}
             stepKey="debt"
             onCompletionChange={(done) => updateCompleted("debt", done)}
           />
@@ -215,7 +219,7 @@ export default function RoadmapTimeline() {
 
         <section id="insurance" className="scroll-mt-24">
           <InsuranceCard
-            userId="demo-user-1"
+            userId={userId}
             stepKey="insurance"
             onCompletionChange={(done) => updateCompleted("insurance", done)}
           />
@@ -223,7 +227,7 @@ export default function RoadmapTimeline() {
 
         <section id="full-fund" className="scroll-mt-24">
           <FullEmergencyFundCard
-            userId="demo-user-1"
+            userId={userId}
             stepKey="full-fund"
             onCompletionChange={(done) => updateCompleted("full-fund", done)}
           />
@@ -231,7 +235,7 @@ export default function RoadmapTimeline() {
 
         <section id="automate" className="scroll-mt-24">
           <AutomateSavingCard
-            userId="demo-user-1"
+            userId={userId}
             stepKey="automate"
             initialGeneralSaved={0}
             initialGeneralMonthly={0}
@@ -241,7 +245,7 @@ export default function RoadmapTimeline() {
 
         <section id="invest" className="scroll-mt-24">
           <InvestCard
-            userId="demo-user-1"
+            userId={userId}
             stepKey="invest"
             onCompletionChange={(done) => updateCompleted("invest", done)}
           />
@@ -249,7 +253,7 @@ export default function RoadmapTimeline() {
 
         <section id="income" className="scroll-mt-24">
           <IncreaseIncomeCard
-            userId="demo-user-1"
+            userId={userId}
             stepKey="income"
             onCompletionChange={(done) => updateCompleted("income", done)}
           />

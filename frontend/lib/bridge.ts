@@ -140,6 +140,51 @@ type ApiEntryCreate = {
 type ApiEntryUpdate = Partial<ApiEntryCreate>;
 
 
+export type AuthUser = {
+  id: string;
+  email: string;
+};
+
+export type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+export type SignupPayload = {
+  email: string;
+  password: string;
+};
+
+const AUTH_STORAGE_KEY = "moneycompass_user";
+
+export function saveCurrentUser(user: AuthUser) {
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+}
+
+export function getCurrentUser(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+
+  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    return null;
+  }
+}
+
+export function getCurrentUserId(): string | null {
+  return getCurrentUser()?.id ?? null;
+}
+
+export function logoutUser() {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+}
+
+
+
 function dateToYmd(d: Date): string {
   // avoids timezone shifting
   const yyyy = d.getFullYear();
@@ -200,31 +245,39 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 
-type ListEntriesParams = {
-  year?: number;
-  month?: number; // 1-12
-  type?: "income" | "expense";
-  limit?: number; // optional, backend default 100
-};
 
 
 export async function listEntries(params?: ListEntriesParams): Promise<UiEntry[]> {
+  const userId = params?.userId ?? getCurrentUserId();
+
+  if (!userId) {
+    throw new Error("User not logged in");
+  }
+
   const qs = new URLSearchParams();
+  qs.set("user_id", userId);
 
   if (params?.year != null) qs.set("year", String(params.year));
   if (params?.month != null) qs.set("month", String(params.month));
   if (params?.type) qs.set("type", params.type);
   if (params?.limit != null) qs.set("limit", String(params.limit));
 
-  const url = `/entries${qs.toString() ? `?${qs.toString()}` : ""}`;
+  const url = `/entries/by-user?${qs.toString()}`;
 
   const data = await request<ApiEntry[]>(url);
   return data.map(apiToUi);
 }
 
+
+
 export async function createEntryFromUi(input: Omit<UiEntry, "id">): Promise<UiEntry> {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    throw new Error("User not logged in");
+  }
+
   const payload: ApiEntryCreate = {
-    user_id: "demo-user-1", // ✅ for now
+    user_id: userId,
     date: dateToYmd(input.date),
     type: input.type,
     name: input.name,
@@ -241,7 +294,6 @@ export async function createEntryFromUi(input: Omit<UiEntry, "id">): Promise<UiE
 
   return apiToUi(created);
 }
-
 export async function patchEntryFromUi(id: string, patch: Partial<Omit<UiEntry, "id">>): Promise<UiEntry> {
   const payload: ApiEntryUpdate = {
     ...(patch.date ? { date: dateToYmd(patch.date) } : {}),
@@ -261,7 +313,13 @@ export async function patchEntryFromUi(id: string, patch: Partial<Omit<UiEntry, 
 
 
 export async function putEntryFromUi(id: string, entry: Omit<UiEntry, "id">): Promise<UiEntry> {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    throw new Error("User not logged in");
+  }
+
   const payload: ApiEntryCreate = {
+    user_id: userId,
     date: dateToYmd(entry.date),
     type: entry.type,
     name: entry.name,
@@ -331,21 +389,25 @@ export async function bulkUpsertUserStepMetrics(payload: UpsertMetric[]) {
   });
 }
 
-export const FULL_FUND_DEFAULT_METRICS: UpsertMetric[] = [
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "rent", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "utilities", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "groceries", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "transportation", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "phone_internet", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "insurance", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "minimum_debt_payments", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "essential_medical_costs", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "child_essentials", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "other_expenses", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "selected_months", value_num: 3 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "current_saved", value_num: 0 },
-  { user_id: "demo-user-1", step_key: "full-fund", metric_key: "save_per_month", value_num: 0 },
-];
+
+
+export function buildFullFundDefaultMetrics(userId: string): UpsertMetric[] {
+  return [
+    { user_id: userId, step_key: "full-fund", metric_key: "rent", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "utilities", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "groceries", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "transportation", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "phone_internet", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "insurance", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "minimum_debt_payments", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "essential_medical_costs", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "child_essentials", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "other_expenses", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "selected_months", value_num: 3 },
+    { user_id: userId, step_key: "full-fund", metric_key: "current_saved", value_num: 0 },
+    { user_id: userId, step_key: "full-fund", metric_key: "save_per_month", value_num: 0 },
+  ];
+}
 
 export async function ensureUserStepMetrics(params: {
   userId: string;
@@ -389,9 +451,20 @@ export type SummaryResponse = {
   anchor?: { year: number; month: number };
 };
 
-export async function getSummary(params: { months: 3 | 6 | 12 }) {
+export async function getSummary(params: {
+  months: 3 | 6 | 12;
+  userId?: string;
+}) {
+  const userId = params.userId ?? getCurrentUserId();
+
+  if (!userId) {
+    throw new Error("User not logged in");
+  }
+
   const qs = new URLSearchParams();
+  qs.set("user_id", userId);
   qs.set("months", String(params.months));
+
   return await request<SummaryResponse>(`/analytics/summary?${qs.toString()}`);
 }
 
@@ -436,6 +509,13 @@ export async function deleteUserDebt(id: string) {
   });
 }
 
+type ListEntriesParams = {
+  year?: number;
+  month?: number; // 1-12
+  type?: "income" | "expense";
+  limit?: number;
+  userId?: string;
+};
 type ListUserEntriesParams = {
   userId: string;
   year?: number;
@@ -444,17 +524,15 @@ type ListUserEntriesParams = {
   limit?: number;
 };
 
+
 export async function listEntriesByUser(params: ListUserEntriesParams): Promise<UiEntry[]> {
-  const qs = new URLSearchParams();
-
-  qs.set("user_id", params.userId);
-  if (params.year != null) qs.set("year", String(params.year));
-  if (params.month != null) qs.set("month", String(params.month));
-  if (params.type) qs.set("type", params.type);
-  if (params.limit != null) qs.set("limit", String(params.limit));
-
-  const data = await request<ApiEntry[]>(`/entries/by-user?${qs.toString()}`);
-  return data.map(apiToUi);
+  return listEntries({
+    userId: params.userId,
+    year: params.year,
+    month: params.month,
+    type: params.type,
+    limit: params.limit,
+  });
 }
 
 export type FullFundSeed = {
@@ -757,3 +835,31 @@ export async function deleteUserInvestment(id: string) {
     method: "DELETE",
   });
 }
+
+
+export async function signupUser(payload: SignupPayload): Promise<AuthUser> {
+  const user = await request<AuthUser>("/users/signup", {
+    method: "POST",
+    body: JSON.stringify({
+      email: payload.email.trim().toLowerCase(),
+      password: payload.password,
+    }),
+  });
+
+  saveCurrentUser(user);
+  return user;
+}
+
+export async function loginUser(payload: LoginPayload): Promise<AuthUser> {
+  const user = await request<AuthUser>("/users/login", {
+    method: "POST",
+    body: JSON.stringify({
+      email: payload.email.trim().toLowerCase(),
+      password: payload.password,
+    }),
+  });
+
+  saveCurrentUser(user);
+  return user;
+}
+

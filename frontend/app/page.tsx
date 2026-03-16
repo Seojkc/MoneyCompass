@@ -1,17 +1,23 @@
 'use client';
 
 import "./CSS/Dashboard.css";
-import { useState ,useEffect} from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import MonthCard from "./Components/MonthSliderCard";
 import FinanceCards from "./Components/FinanceCards";
 import QuickAddEntry from "./Components/QuickAddEntry";
 import IncomeExpenseTable from "./Components/IncomeExpenseTable";
 import ExpensePieChart from "./Components/ExpensePieChart";
 import CsvImporter, { ImportedRow } from "./Components/CsvImporter";
-import { UiEntry, listEntries, createEntryFromUi, deleteEntryApi } from "@/lib/bridge";
+import {
+  listEntriesByUser,
+  createEntryFromUi,
+  deleteEntryApi,
+  getCurrentUser,
+  logoutUser,
+  type AuthUser,
+} from "@/lib/bridge";
 import Analytics from "./Components/AnalyticsFolder/Analytics";
-
-
 
 type Transaction = {
   type: "income" | "expense";
@@ -29,55 +35,96 @@ type Entry = {
 };
 
 export default function Home() {
+  const router = useRouter();
+
+  const [authChecked, setAuthChecked] = useState(false);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [loadingEntries, setLoadingEntries] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      const y = selectedMonth.getFullYear();
-      const m = selectedMonth.getMonth() + 1;
-      const dbEntries = await listEntries({ year: y, month: m, limit: 500 });
-      setEntries(dbEntries);
-    })();
-  }, [selectedMonth]);
+    const user = getCurrentUser();
 
+    if (!user?.id || !user?.email) {
+      logoutUser();
+      router.replace("/login");
+      return;
+    }
 
+    setCurrentUser(user);
+    setAuthChecked(true);
+  }, [router]);
+
+  useEffect(() => {
+    if (!authChecked || !currentUser?.id) return;
+
+    const loadEntries = async () => {
+      setLoadingEntries(true);
+      try {
+        const y = selectedMonth.getFullYear();
+        const m = selectedMonth.getMonth() + 1;
+
+        const dbEntries = await listEntriesByUser({
+          userId: currentUser.id,
+          year: y,
+          month: m,
+          limit: 500,
+        });
+
+        setEntries(dbEntries);
+      } catch (err) {
+        console.error("Failed to load entries:", err);
+      } finally {
+        setLoadingEntries(false);
+      }
+    };
+
+    loadEntries();
+  }, [selectedMonth, authChecked, currentUser]);
 
   const makeId = () =>
-    (typeof crypto !== "undefined" && "randomUUID" in crypto)
+    typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-  // ✅ QuickAdd should update BOTH: transactions (for last used) AND entries (for table)
-  const addQuickEntry = async (type: "income" | "expense",category: string,amount: number) => {
+  const addQuickEntry = async (
+    type: "income" | "expense",
+    category: string,
+    amount: number
+  ) => {
+    if (!currentUser?.id) {
+      router.replace("/login");
+      return;
+    }
+
     setTransactions((prev) => [...prev, { type, category, amount }]);
 
     const today = new Date();
-    const dateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const isSameSelectedMonthAsToday =
       selectedMonth.getFullYear() === today.getFullYear() &&
       selectedMonth.getMonth() === today.getMonth();
 
     const quickDate = isSameSelectedMonthAsToday
-      ? new Date(today.getFullYear(), today.getMonth(), today.getDate()) // today (no time)
-      : new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1); // 1st of selected month (no time)
+      ? new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      : new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
 
-        // 1) Create a temp entry for instant UI update
-        const tempId = makeId();
-        const optimisticEntry: Entry = {
-          id: tempId,
-          type,
-          name: "QuickEntry",
-          category,
-          amount: Math.abs(amount),
-          date: quickDate,
-        };
+    const tempId = makeId();
+
+    const optimisticEntry: Entry = {
+      id: tempId,
+      type,
+      name: "QuickEntry",
+      category,
+      amount: Math.abs(amount),
+      date: quickDate,
+    };
 
     setEntries((prev) => [optimisticEntry, ...prev]);
 
     try {
-      // 2) POST to backend (NO id in payload)
       const created = await createEntryFromUi({
         type: optimisticEntry.type,
         name: optimisticEntry.name,
@@ -86,46 +133,40 @@ export default function Home() {
         date: optimisticEntry.date,
       });
 
-      // 3) Replace temp entry with real DB entry (real id)
-      setEntries((prev) =>
-        prev.map((e) => (e.id === tempId ? created : e))
-      );
+      setEntries((prev) => prev.map((e) => (e.id === tempId ? created : e)));
     } catch (err) {
       console.error("Failed to create entry:", err);
-
-      // 4) Rollback optimistic UI if API failed
       setEntries((prev) => prev.filter((e) => e.id !== tempId));
     }
   };
 
   const deleteEntry = async (id: string) => {
-    // 1) Optimistic UI remove
     const snapshot = entries;
     setEntries((prev) => prev.filter((e) => e.id !== id));
 
     try {
-      // 2) Delete from DB
       const res = await deleteEntryApi(id);
 
-      // Optional sanity check
       if (!res?.deleted) {
         throw new Error("Backend did not confirm deletion");
       }
     } catch (err) {
       console.error("Failed to delete entry:", err);
-
-      // 3) Rollback UI if API failed
       setEntries(snapshot);
     }
   };
 
   const handleCsvData = async (rows: ImportedRow[]) => {
-    // 1) Convert CSV rows -> UI entries (use TEMP ids for UI)
+    if (!currentUser?.id) {
+      router.replace("/login");
+      return;
+    }
+
     const converted: Entry[] = rows.map((r) => {
       const [y, m, d] = r.date.split("-").map(Number);
 
       return {
-        id: crypto.randomUUID(), // temp id for UI
+        id: makeId(),
         type: r.amount < 0 ? "expense" : "income",
         name: r.name || "Unknown",
         category: r.category || "Other",
@@ -134,10 +175,8 @@ export default function Home() {
       };
     });
 
-    // 2) Optimistic UI update
     setEntries((prev) => [...converted, ...prev]);
 
-    // 3) POST each entry to backend, then replace temp with real DB entry
     const results = await Promise.allSettled(
       converted.map(async (temp) => {
         const created = await createEntryFromUi({
@@ -147,104 +186,170 @@ export default function Home() {
           amount: temp.amount,
           date: temp.date,
         });
+
         return { tempId: temp.id, created };
       })
     );
 
-    // 4) Apply updates / rollbacks
     setEntries((prev) => {
       let next = [...prev];
 
-      for (const r of results) {
-        if (r.status === "fulfilled") {
-          const { tempId, created } = r.value;
+      results.forEach((result) => {
+        if (result.status === "fulfilled") {
+          const { tempId, created } = result.value;
           next = next.map((e) => (e.id === tempId ? created : e));
-        } else {
-          // remove failed ones
-          // (optional) you can keep them and mark as "failed" instead
-          const failedTemp = converted.find((x) => results.indexOf(r as any) >= 0)?.id;
-          // safer: remove by matching all temps that didn't fulfill
         }
-      }
+      });
 
-      // safer rollback: remove any temp ids that failed
       const failedTempIds = results
-        .filter((x) => x.status === "rejected")
-        .map((_, idx) => converted[idx].id);
+        .map((result, idx) =>
+          result.status === "rejected" ? converted[idx].id : null
+        )
+        .filter((id): id is string => Boolean(id));
 
       next = next.filter((e) => !failedTempIds.includes(e.id));
 
       return next;
     });
 
-    // Optional: log failures
-    results.forEach((r, idx) => {
-      if (r.status === "rejected") {
-        console.error("CSV row failed to import:", converted[idx], r.reason);
+    results.forEach((result, idx) => {
+      if (result.status === "rejected") {
+        console.error("CSV row failed to import:", converted[idx], result.reason);
       }
     });
   };
 
-  // Last used categories
-  const lastIncomeCategory =
-    [...transactions].filter(t => t.type === "income").map(t => t.category).pop() || "Salary";
+  const handleLogout = () => {
+    logoutUser();
+    router.push("/login");
+  };
 
-  const lastExpenseCategory =
-    [...transactions].filter(t => t.type === "expense").map(t => t.category).pop() || "Food";
+  const lastIncomeCategory = useMemo(
+    () =>
+      [...transactions]
+        .filter((t) => t.type === "income")
+        .map((t) => t.category)
+        .pop() || "Salary",
+    [transactions]
+  );
 
+  const lastExpenseCategory = useMemo(
+    () =>
+      [...transactions]
+        .filter((t) => t.type === "expense")
+        .map((t) => t.category)
+        .pop() || "Food",
+    [transactions]
+  );
 
-  const sameMonth = (d: Date, selected: Date) =>
-    d.getMonth() === selected.getMonth() && d.getFullYear() === selected.getFullYear();
+  const entriesThisMonth = useMemo(() => {
+    return entries.filter((e) => {
+      return (
+        e.date.getMonth() === selectedMonth.getMonth() &&
+        e.date.getFullYear() === selectedMonth.getFullYear()
+      );
+    });
+  }, [entries, selectedMonth]);
 
-  const entriesThisMonth = entries.filter(e => sameMonth(e.date, selectedMonth));
-
+  if (!authChecked || !currentUser) {
+    return null;
+  }
 
   return (
     <div className="">
-      <h1 className="main-heading">Dashboard</h1>
-      
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: "12px",
+          flexWrap: "wrap",
+        }}
+      >
+        <h1 className="main-heading">Dashboard</h1>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ fontSize: "14px", opacity: 0.8 }}>
+            {currentUser.email}
+          </span>
+
+          <button
+            onClick={handleLogout}
+            style={{
+              border: "none",
+              borderRadius: "10px",
+              padding: "10px 14px",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
       <div className="firstpart-container">
         <MonthCard onChange={setSelectedMonth} />
-        <FinanceCards selectedDate={selectedMonth} entries={entries} />
+
+        <FinanceCards
+          userId={currentUser.id}
+          selectedDate={selectedMonth}
+          entries={entries}
+        />
       </div>
 
       <div className="secondpart-container">
         <div className="quick-add-container">
           <QuickAddEntry
+            userId={currentUser.id}
             type="income"
             lastUsedCategory={lastIncomeCategory}
             onAdd={(cat, amt) => addQuickEntry("income", cat, amt)}
           />
 
           <QuickAddEntry
+            userId={currentUser.id}
             type="expense"
             lastUsedCategory={lastExpenseCategory}
             onAdd={(cat, amt) => addQuickEntry("expense", cat, amt)}
           />
 
-          <CsvImporter onData={handleCsvData} />
+          <CsvImporter
+            userId={currentUser.id}
+            onData={handleCsvData}
+          />
 
-          <ExpensePieChart selectedDate={selectedMonth} entries={entries} />
+          <ExpensePieChart
+            userId={currentUser.id}
+            selectedDate={selectedMonth}
+            entries={entries}
+          />
         </div>
 
         <div className="TransactionTable-container">
           <IncomeExpenseTable
+            userId={currentUser.id}
             title="Income"
-            entries={entriesThisMonth.filter(e => e.type === "income")}
+            entries={entriesThisMonth.filter((e) => e.type === "income")}
             onDelete={deleteEntry}
           />
 
           <IncomeExpenseTable
+            userId={currentUser.id}
             title="Expense"
-            entries={entriesThisMonth.filter(e => e.type === "expense")}
+            entries={entriesThisMonth.filter((e) => e.type === "expense")}
             onDelete={deleteEntry}
           />
-
         </div>
       </div>
 
-
-      <Analytics ></Analytics>
+      <Analytics
+        userId={currentUser.id}
+        selectedDate={selectedMonth}
+        entries={entries}
+        loading={loadingEntries}
+      />
     </div>
   );
 }

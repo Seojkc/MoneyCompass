@@ -15,7 +15,7 @@ from app.api.user_roadmap import router as  user_roadmap_router
 from app.api.user_debts import router as user_debts_router
 from app.api.user_saving_goals import router as user_saving_goals
 from app.api.user_investments import router as user_investments_router
-
+from app.api.users import router as users_router
 
 print("✅ RUNNING FASTAPI MAIN.PY FROM:", os.path.abspath(__file__))
 
@@ -52,3 +52,4 @@ app.include_router(user_roadmap_router)
 app.include_router(user_debts_router)
 app.include_router(user_saving_goals)
 app.include_router(user_investments_router)
+app.include_router(users_router)
