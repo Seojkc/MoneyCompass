@@ -186,10 +186,6 @@ export default function EliminateHighInterestDebtCard({
     return copy;
   }, [debts, strategy]);
 
-  const estimatedBalanceNextYear = useMemo(() => {
-    return estimateTotalBalanceAfterMonths(debts, 12);
-  }, [debts]);
-
   const totals = useMemo(() => {
     const totalBalance = debts.reduce((sum, d) => sum + (Number(d.balance) || 0), 0);
     const totalPayment = debts.reduce(
@@ -197,6 +193,10 @@ export default function EliminateHighInterestDebtCard({
       0
     );
     return { totalBalance, totalPayment };
+  }, [debts]);
+
+  const estimatedBalanceNextYear = useMemo(() => {
+    return estimateBalanceNextYearFromInterestOnly(debts);
   }, [debts]);
 
   const hasDebtContext = useMemo(() => {
@@ -443,99 +443,6 @@ export default function EliminateHighInterestDebtCard({
           back your monthly freedom.
         </p>
       </div>
-
-      <div className="rounded-xl border border-rose-300/20 bg-rose-300/10 p-3 text-rose-200">
-        <div className="font-semibold">⚠️ Interest is a money leak</div>
-        <div className="mt-1 text-white/80">
-          If you keep high-interest balances, a portion of every paycheck disappears
-          into interest before it can build your savings, investing, or life goals.
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <div className="font-semibold text-white">📉 What interest can cost (approx.)</div>
-
-        <div className="overflow-hidden rounded-xl border border-white/10">
-          <div className="grid grid-cols-4 bg-white/5 text-xs text-white/60">
-            <div className="px-3 py-2">Balance</div>
-            <div className="px-3 py-2">APR</div>
-            <div className="px-3 py-2">Interest / month</div>
-            <div className="px-3 py-2">Interest / year</div>
-          </div>
-
-          {[
-            { bal: 2500, apr: 10 },
-            { bal: 5000, apr: 20 },
-            { bal: 10000, apr: 24 },
-            { bal: 25000, apr: 8 },
-          ].map((r) => {
-            const monthly = (r.bal * (r.apr / 100)) / 12;
-            const yearly = r.bal * (r.apr / 100);
-
-            return (
-              <div
-                key={`${r.bal}-${r.apr}`}
-                className="grid grid-cols-4 border-t border-white/10 bg-black/10 text-sm"
-              >
-                <div className="px-3 py-2 text-white/85">${moneyFmt(r.bal)}</div>
-                <div className="px-3 py-2 text-white/85">{r.apr}%</div>
-                <div className="px-3 py-2 text-amber-200/90">${moneyFmt(monthly)}</div>
-                <div className="px-3 py-2 text-amber-200/90">${moneyFmt(yearly)}</div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="text-xs text-white/55">
-          *Simple estimate (APR ÷ 12). Real interest depends on compounding and your
-          payments — but the money leak is real.
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 font-medium text-amber-200">
-        👉 Paying off a 20% debt is like a guaranteed 20% return — with zero market risk.
-      </div>
-
-      <div className="space-y-3">
-        <div className="font-semibold text-white">🧠 Choose a strategy you’ll stick to</div>
-
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-            <div className="font-semibold text-white">⚡ Avalanche</div>
-            <div className="mt-1 text-white/75">
-              Highest interest first → saves the most money overall.
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-            <div className="font-semibold text-white">🏔 Snowball</div>
-            <div className="mt-1 text-white/75">
-              Lowest balance first → faster wins → easier motivation.
-            </div>
-          </div>
-        </div>
-
-        <div className="text-white/75">Best strategy = the one you can follow for months.</div>
-      </div>
-
-      <div className="space-y-3">
-        <div className="font-semibold text-white">🛡 How to avoid future unnecessary high debt</div>
-        <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-emerald-200">
-          <ul className="space-y-2">
-            <li>✅ Don’t finance “wants” if you can’t repay this month.</li>
-            <li>✅ If borrowing is necessary, set a payoff deadline (6–12 months).</li>
-            <li>✅ Keep a starter emergency fund to stop debt from returning.</li>
-            <li>✅ Credit cards are a payment tool — not extra income.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="space-y-2 border-t border-white/10 pt-3">
-        <p className="text-lg font-semibold text-white">🧭 Debt freedom is cash flow + peace of mind.</p>
-        <p className="text-sm italic text-white/70">
-          Start small, but start today — momentum compounds too.
-        </p>
-      </div>
     </div>
   );
 
@@ -689,23 +596,9 @@ export default function EliminateHighInterestDebtCard({
           />
         </div>
 
-        {/* <div className="mt-4">
-          <div className="mb-2 flex items-center justify-between text-xs text-white/60">
-            <span>Debt payoff progress</span>
-            <span>{progressPct}%</span>
-          </div>
-
-          <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full rounded-full bg-green-500 transition-all duration-300"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-        </div> */}
-
         <div className="mt-6 border-t border-white/10 pt-4">
           <div className="flex flex-wrap items-center gap-2 text-sm text-white/85 md:text-base">
-            <span className="font-semibold">Contributing</span>
+            <span className="font-semibold">Extra contributing</span>
 
             <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2 py-1">
               <span className="text-sm text-white/50">$</span>
@@ -926,29 +819,13 @@ function MiniMetric({ label, value }: { label: React.ReactNode; value: string })
   );
 }
 
-function estimateTotalBalanceAfterMonths(debts: Debt[], months: number) {
-  let working = debts.map((d) => ({
-    balance: Math.max(0, Number(d.balance) || 0),
-    interestPct: Math.max(0, Number(d.interestPct) || 0),
-    totalPayment: Math.max(0, Number(d.totalPayment) || 0),
-  }));
-
-  for (let i = 0; i < months; i++) {
-    working = working.map((d) => {
-      if (d.balance <= 0) return d;
-
-      const monthlyRate = d.interestPct / 100 / 12;
-      const interestForMonth = d.balance * monthlyRate;
-      const nextBalance = d.balance + interestForMonth - d.totalPayment;
-
-      return {
-        ...d,
-        balance: Math.max(0, nextBalance),
-      };
-    });
-  }
-
-  return working.reduce((sum, d) => sum + d.balance, 0);
+function estimateBalanceNextYearFromInterestOnly(debts: Debt[]) {
+  return debts.reduce((sum, d) => {
+    const balance = Math.max(0, Number(d.balance) || 0);
+    const interestPct = Math.max(0, Number(d.interestPct) || 0);
+    const nextYearBalance = balance + balance * (interestPct / 100);
+    return sum + nextYearBalance;
+  }, 0);
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
