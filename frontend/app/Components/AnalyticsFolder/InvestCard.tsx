@@ -56,8 +56,10 @@ const METRIC_KEYS = {
 
 const PROJECTION_YEARS = [1, 3, 5, 10, 15, 20];
 
+const INVEST_LEARN_LINK =
+  "https://youtu.be/9s8LJejwlPE?si=_yCc7DIkoh2FJwMs";
+
 const PRESETS: PresetInvestment[] = [
-  // LOW RISK
   {
     id: "zcs",
     name: "BMO Short Corporate Bond Index ETF (ZCS)",
@@ -77,7 +79,6 @@ const PRESETS: PresetInvestment[] = [
     averageReturn5y: 7.93,
   },
 
-  // MEDIUM RISK
   {
     id: "xic",
     name: "iShares Core S&P/TSX Capped Composite Index ETF (XIC)",
@@ -142,7 +143,6 @@ const PRESETS: PresetInvestment[] = [
     averageReturn5y: 18.54,
   },
 
-  // HIGH RISK
   {
     id: "vfv",
     name: "Vanguard S&P 500 Index ETF (VFV)",
@@ -376,22 +376,22 @@ export default function InvestCard({
 
   const hasReportedInitialStateRef = useRef(false);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!onCompletionChange) return;
     if (loading) return;
 
     if (!hasReportedInitialStateRef.current) {
-        hasReportedInitialStateRef.current = true;
-        lastDoneRef.current = isDone;
-        onCompletionChange(isDone);
-        return;
+      hasReportedInitialStateRef.current = true;
+      lastDoneRef.current = isDone;
+      onCompletionChange(isDone);
+      return;
     }
 
     if (lastDoneRef.current !== isDone) {
-        lastDoneRef.current = isDone;
-        onCompletionChange(isDone);
+      lastDoneRef.current = isDone;
+      onCompletionChange(isDone);
     }
-    }, [loading, isDone, onCompletionChange]);
+  }, [loading, isDone, onCompletionChange]);
 
   useEffect(() => {
     let mounted = true;
@@ -754,6 +754,8 @@ export default function InvestCard({
           </button>
         </div>
 
+          
+
         <div className="mt-6 flex justify-start">
           <button
             onClick={() => setAddOpen(true)}
@@ -762,6 +764,17 @@ export default function InvestCard({
             <span className="text-lg leading-none">+</span>
             Add investment
           </button>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mx-4">
+            <a
+              href={INVEST_LEARN_LINK}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-sky-200/20 bg-black/20 px-4 py-3 text-sm font-semibold text-sky-100 hover:bg-black/30"
+            >
+              <span className="text-base">▶</span>
+              Watch on YouTube
+            </a>
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
