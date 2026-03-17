@@ -199,13 +199,9 @@ export default function EliminateHighInterestDebtCard({
     return estimateBalanceNextYearFromInterestOnly(debts);
   }, [debts]);
 
-  const hasDebtContext = useMemo(() => {
-    return initialTotalBalance > 0 || debts.length > 0;
-  }, [initialTotalBalance, debts.length]);
-
   const isDone = useMemo(() => {
-    return hasDebtContext && totals.totalBalance <= 0.00001;
-  }, [hasDebtContext, totals.totalBalance]);
+    return totals.totalBalance <= 0.00001;
+  }, [totals.totalBalance]);
 
   const progressPct = useMemo(() => {
     const baseline = Number(initialTotalBalance) || 0;
@@ -234,23 +230,25 @@ export default function EliminateHighInterestDebtCard({
 
   const monthsToDebtFree = useMemo(() => {
     const c = Number(contributing) || 0;
-    if (c <= 0) return null;
+    if (c <= 0 || totals.totalBalance <= 0) return 0;
     return Math.max(0, Math.ceil(totals.totalBalance / c));
   }, [contributing, totals.totalBalance]);
 
   const debtFreeBy = useMemo(() => {
+    if (totals.totalBalance <= 0) return "Now";
     if (monthsToDebtFree == null) return null;
+
     const d = new Date();
     d.setMonth(d.getMonth() + monthsToDebtFree);
     return d.toLocaleString(undefined, { month: "short", year: "numeric" });
-  }, [monthsToDebtFree]);
+  }, [monthsToDebtFree, totals.totalBalance]);
 
   const microLine = useMemo(() => {
+    if (isDone) return "Debt-free. Your cash flow is now yours again.";
     if (!debts.length) return "Add a debt to start your payoff plan.";
     if ((Number(contributing) || 0) <= 0) {
       return "Set a monthly contribution to see your timeline.";
     }
-    if (isDone) return "Debt-free. Your cash flow is now yours again.";
     if ((monthsToDebtFree ?? 0) <= 6) return "You’re very close — keep the momentum.";
     if ((monthsToDebtFree ?? 0) <= 18) {
       return "Consistent payments will change everything.";
