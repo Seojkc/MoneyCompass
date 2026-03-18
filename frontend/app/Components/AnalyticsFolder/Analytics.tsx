@@ -35,11 +35,6 @@ export const Analytics: React.FC<AnalyticsProps> = ({userId}) => {
                 </div>
                 
             </div>
-            <div className="thirdpart-container p-4">
-                    <h1 className='main-heading'>Journey Progress</h1>
-                    <h3>How to become Financial independent ?</h3>
-                    <RoadmapTimeline  userId={userId}/>
-                </div>
         </div>
     );
 };

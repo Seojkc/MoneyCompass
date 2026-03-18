@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
 import "./CSS/Dashboard.css";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import MonthCard from "./Components/MonthSliderCard";
+import RoadmapTimeline from "./Components/AnalyticsFolder/RoadmapTimeline";
 import FinanceCards from "./Components/FinanceCards";
 import QuickAddEntry from "./Components/QuickAddEntry";
 import IncomeExpenseTable from "./Components/IncomeExpenseTable";
@@ -224,6 +225,23 @@ export default function Home() {
     router.push("/login");
   };
 
+  const handleLogin = () => {
+    router.push("/login");
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    if (!el) return;
+
+    const navbarOffset = 110;
+    const y = el.getBoundingClientRect().top + window.scrollY - navbarOffset;
+
+    window.scrollTo({
+      top: y,
+      behavior: "smooth",
+    });
+  };
+
   const lastIncomeCategory = useMemo(
     () =>
       [...transactions]
@@ -256,100 +274,330 @@ export default function Home() {
   }
 
   return (
-    <div className="">
+    <div
+      style={{
+        minHeight: "100vh",
+        color: "#e5eefb",
+        background:
+          "radial-gradient(circle at top left, rgba(56,189,248,0.16) 0%, transparent 24%), radial-gradient(circle at top right, rgba(139,92,246,0.14) 0%, transparent 28%), linear-gradient(180deg, #050816 0%, #0a1020 32%, #0d1326 68%, #09101d 100%)",
+      }}
+    >
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "12px",
-          marginBottom: "12px",
-          flexWrap: "wrap",
+          position: "sticky",
+          top: 12,
+          zIndex: 1000,
+          padding: "16px 20px 0",
         }}
       >
-        <h1 className="main-heading">Dashboard</h1>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ fontSize: "14px", opacity: 0.8 }}>
-            {currentUser.email}
-          </span>
-
-          <button
-            onClick={handleLogout}
+        <div
+          style={{
+            maxWidth: "1400px",
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            flexWrap: "wrap",
+            padding: "14px 18px",
+            borderRadius: "26px",
+            background:
+              "linear-gradient(135deg, rgba(15,23,42,0.82), rgba(17,25,40,0.62))",
+            border: "1px solid rgba(255,255,255,0.12)",
+            backdropFilter: "blur(24px) saturate(180%)",
+            WebkitBackdropFilter: "blur(24px) saturate(180%)",
+            boxShadow:
+              "0 18px 50px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.04)",
+          }}
+        >
+          <div
             style={{
-              border: "none",
-              borderRadius: "10px",
-              padding: "10px 14px",
-              cursor: "pointer",
-              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              flexWrap: "wrap",
             }}
           >
-            Logout
-          </button>
+            <div>
+              MoneyCompass
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "6px",
+                borderRadius: "18px",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 24px rgba(0,0,0,0.18)",
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                onClick={() => scrollToSection("dashboard-section")}
+                style={navBtnStyle}
+              >
+                Dashboard
+              </button>
+
+              <button
+                onClick={() => scrollToSection("analytics-section")}
+                style={navBtnStyle}
+              >
+                Analytics
+              </button>
+
+              <button
+                onClick={() => scrollToSection("journey-section")}
+                style={navBtnStyle}
+              >
+                Journey Progress
+              </button>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div
+              style={{
+                padding: "10px 14px",
+                borderRadius: "14px",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                color: "#cbd5e1",
+                fontSize: "13px",
+                maxWidth: "260px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+              }}
+              title={currentUser.email}
+            >
+              {currentUser.email}
+            </div>
+
+            {currentUser ? (
+              <button
+                onClick={handleLogout}
+                style={{
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: "16px",
+                  padding: "12px 18px",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                  color: "#fff",
+                  background:
+                    "linear-gradient(135deg, rgba(239,68,68,0.95), rgba(190,24,93,0.95))",
+                  boxShadow:
+                    "0 12px 28px rgba(239,68,68,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
+                  transition: "all 0.22s ease",
+                }}
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                onClick={handleLogin}
+                style={{
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: "16px",
+                  padding: "12px 18px",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                  color: "#fff",
+                  background:
+                    "linear-gradient(135deg, rgba(37,99,235,0.95), rgba(139,92,246,0.95))",
+                  boxShadow:
+                    "0 12px 28px rgba(59,130,246,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
+                  transition: "all 0.22s ease",
+                }}
+              >
+                Login
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="firstpart-container">
-        <MonthCard onChange={setSelectedMonth} />
+      <div
+        style={{
+          maxWidth: "1400px",
+          margin: "0 auto",
+          padding: "26px 20px 44px",
+        }}
+      >
+        <section
+          id="dashboard-section"
+          style={{
+            scrollMarginTop: "130px",
+            marginBottom: "30px",
+          }}
+        >
+          <div
+            style={{
+              marginBottom: "18px",
+              padding: "22px 22px 18px",
+              borderRadius: "24px",
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow:
+                "0 12px 32px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.06)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "12px",
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <h1
+                  className="main-heading"
+                  style={{ marginBottom: "6px", color: "#f8fafc" }}
+                >
+                  Dashboard
+                </h1>
+                <p
+                  style={{
+                    margin: 0,
+                    color: "#94a3b8",
+                    fontSize: "15px",
+                  }}
+                >
+                  Track your money, review your analytics, and move forward with clarity.
+                </p>
+              </div>
 
-        <FinanceCards
-          userId={currentUser.id}
-          selectedDate={selectedMonth}
-          entries={entries}
-        />
+              {loadingEntries && (
+                <div
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "14px",
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "#cbd5e1",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Loading entries...
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="firstpart-container">
+            <MonthCard onChange={setSelectedMonth} />
+            <FinanceCards selectedDate={selectedMonth} entries={entries} />
+          </div>
+
+          <div className="secondpart-container">
+            <div className="quick-add-container">
+              <QuickAddEntry
+                type="income"
+                lastUsedCategory={lastIncomeCategory}
+                onAdd={(cat, amt) => addQuickEntry("income", cat, amt)}
+              />
+
+              <QuickAddEntry
+                type="expense"
+                lastUsedCategory={lastExpenseCategory}
+                onAdd={(cat, amt) => addQuickEntry("expense", cat, amt)}
+              />
+
+              <CsvImporter onData={handleCsvData} />
+              <ExpensePieChart selectedDate={selectedMonth} entries={entries} />
+            </div>
+
+            <div className="TransactionTable-container">
+              <IncomeExpenseTable
+                title="Income"
+                entries={entriesThisMonth.filter((e) => e.type === "income")}
+                onDelete={deleteEntry}
+              />
+
+              <IncomeExpenseTable
+                title="Expense"
+                entries={entriesThisMonth.filter((e) => e.type === "expense")}
+                onDelete={deleteEntry}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="analytics-section"
+          style={{
+            scrollMarginTop: "130px",
+            marginBottom: "30px",
+          }}
+        >
+          <div
+            style={{
+              padding: "18px",
+              borderRadius: "24px",
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025))",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow:
+                "0 12px 32px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.05)",
+            }}
+          >
+            <Analytics userId={currentUser.id} />
+          </div>
+        </section>
+
+        <section
+          id="journey-section"
+          className="thirdpart-container p-4"
+          style={{
+            scrollMarginTop: "130px",
+            borderRadius: "24px",
+            padding: "22px",
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025))",
+            border: "1px solid rgba(255,255,255,0.08)",
+            boxShadow:
+              "0 12px 32px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.05)",
+          }}
+        >
+          <h1 className="main-heading" style={{ color: "#f8fafc" }}>
+            Journey Progress
+          </h1>
+          <h3 style={{ color: "#94a3b8" }}>
+            How to become Financial independent ?
+          </h3>
+          <RoadmapTimeline userId={currentUser.id} />
+        </section>
       </div>
-
-      <div className="secondpart-container">
-        <div className="quick-add-container">
-          <QuickAddEntry
-            userId={currentUser.id}
-            type="income"
-            lastUsedCategory={lastIncomeCategory}
-            onAdd={(cat, amt) => addQuickEntry("income", cat, amt)}
-          />
-
-          <QuickAddEntry
-            userId={currentUser.id}
-            type="expense"
-            lastUsedCategory={lastExpenseCategory}
-            onAdd={(cat, amt) => addQuickEntry("expense", cat, amt)}
-          />
-
-          <CsvImporter
-            userId={currentUser.id}
-            onData={handleCsvData}
-          />
-
-          <ExpensePieChart
-            userId={currentUser.id}
-            selectedDate={selectedMonth}
-            entries={entries}
-          />
-        </div>
-
-        <div className="TransactionTable-container">
-          <IncomeExpenseTable
-            userId={currentUser.id}
-            title="Income"
-            entries={entriesThisMonth.filter((e) => e.type === "income")}
-            onDelete={deleteEntry}
-          />
-
-          <IncomeExpenseTable
-            userId={currentUser.id}
-            title="Expense"
-            entries={entriesThisMonth.filter((e) => e.type === "expense")}
-            onDelete={deleteEntry}
-          />
-        </div>
-      </div>
-
-      <Analytics
-        userId={currentUser.id}
-        selectedDate={selectedMonth}
-        entries={entries}
-        loading={loadingEntries}
-      />
     </div>
   );
 }
+
+const navBtnStyle: React.CSSProperties = {
+  border: "1px solid transparent",
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+  padding: "10px 16px",
+  borderRadius: "14px",
+  cursor: "pointer",
+  fontWeight: 700,
+  fontSize: "14px",
+  color: "#e2e8f0",
+  transition: "all 0.22s ease",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+};
