@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://192.168.50.48:8000";
 
 
 console.log("API_URL =", API_URL); 

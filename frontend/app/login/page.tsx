@@ -9,7 +9,7 @@ type AuthResponse = {
 };
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://192.168.50.48:8000";
 
 const STORAGE_KEY = "moneycompass_user";
 
@@ -123,6 +123,7 @@ export default function LoginPage() {
       <div className="ambient ambient-1" />
       <div className="ambient ambient-2" />
       <div className="ambient ambient-3" />
+      
 
       <section className="shell">
         <div className="left-panel">

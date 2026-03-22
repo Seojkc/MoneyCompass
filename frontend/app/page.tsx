@@ -1,7 +1,8 @@
 "use client";
 
 import "./CSS/Dashboard.css";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MonthCard from "./Components/MonthSliderCard";
 import RoadmapTimeline from "./Components/AnalyticsFolder/RoadmapTimeline";
@@ -10,6 +11,10 @@ import QuickAddEntry from "./Components/QuickAddEntry";
 import IncomeExpenseTable from "./Components/IncomeExpenseTable";
 import ExpensePieChart from "./Components/ExpensePieChart";
 import CsvImporter, { ImportedRow } from "./Components/CsvImporter";
+import logoImage from "../asset/logo.png";
+import { LayoutDashboard, ChartColumnBig, Map } from "lucide-react";
+
+
 import {
   listEntriesByUser,
   createEntryFromUi,
@@ -46,6 +51,14 @@ export default function Home() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
 
+  const [navVisible, setNavVisible] = useState(true);
+  const [navScrolled, setNavScrolled] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
+  const profileRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     const user = getCurrentUser();
 
@@ -60,31 +73,49 @@ export default function Home() {
   }, [router]);
 
   useEffect(() => {
-    if (!authChecked || !currentUser?.id) return;
+    const updateNavbar = () => {
+      const currentY = window.scrollY;
+      const diff = currentY - lastScrollY.current;
 
-    const loadEntries = async () => {
-      setLoadingEntries(true);
-      try {
-        const y = selectedMonth.getFullYear();
-        const m = selectedMonth.getMonth() + 1;
+      setNavScrolled(currentY > 16);
 
-        const dbEntries = await listEntriesByUser({
-          userId: currentUser.id,
-          year: y,
-          month: m,
-          limit: 500,
-        });
+      if (currentY <= 24) {
+        setNavVisible(true);
+      } else if (diff > 10) {
+        setNavVisible(false);
+        setProfileOpen(false);
+      } else if (diff < -10) {
+        setNavVisible(true);
+      }
 
-        setEntries(dbEntries);
-      } catch (err) {
-        console.error("Failed to load entries:", err);
-      } finally {
-        setLoadingEntries(false);
+      lastScrollY.current = currentY;
+      ticking.current = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking.current) {
+        window.requestAnimationFrame(updateNavbar);
+        ticking.current = true;
       }
     };
 
-    loadEntries();
-  }, [selectedMonth, authChecked, currentUser]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const makeId = () =>
     typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -221,11 +252,8 @@ export default function Home() {
   };
 
   const handleLogout = () => {
+    setProfileOpen(false);
     logoutUser();
-    router.push("/login");
-  };
-
-  const handleLogin = () => {
     router.push("/login");
   };
 
@@ -233,7 +261,7 @@ export default function Home() {
     const el = document.getElementById(sectionId);
     if (!el) return;
 
-    const navbarOffset = 110;
+    const navbarOffset = 120;
     const y = el.getBoundingClientRect().top + window.scrollY - navbarOffset;
 
     window.scrollTo({
@@ -241,6 +269,13 @@ export default function Home() {
       behavior: "smooth",
     });
   };
+
+  const displayName =
+    
+    currentUser?.email?.split("@")[0] ||
+    "User";
+
+  const userInitial = displayName.charAt(0).toUpperCase();
 
   const lastIncomeCategory = useMemo(
     () =>
@@ -274,226 +309,112 @@ export default function Home() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        color: "#e5eefb",
-        background:
-          "radial-gradient(circle at top left, rgba(56,189,248,0.16) 0%, transparent 24%), radial-gradient(circle at top right, rgba(139,92,246,0.14) 0%, transparent 28%), linear-gradient(180deg, #050816 0%, #0a1020 32%, #0d1326 68%, #09101d 100%)",
-      }}
-    >
+    <div className="home-page-shell">
+      <div className="ambient ambient-1" />
+      <div className="ambient ambient-2" />
+      <div className="ambient ambient-3" />
+
       <div
-        style={{
-          position: "sticky",
-          top: 12,
-          zIndex: 1000,
-          padding: "16px 20px 0",
-        }}
+        className={`top-nav-wrap ${navVisible ? "visible" : "hidden"} ${
+          navScrolled ? "scrolled" : ""
+        }`}
       >
-        <div
-          style={{
-            maxWidth: "1400px",
-            margin: "0 auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "16px",
-            flexWrap: "wrap",
-            padding: "14px 18px",
-            borderRadius: "26px",
-            background:
-              "linear-gradient(135deg, rgba(15,23,42,0.82), rgba(17,25,40,0.62))",
-            border: "1px solid rgba(255,255,255,0.12)",
-            backdropFilter: "blur(24px) saturate(180%)",
-            WebkitBackdropFilter: "blur(24px) saturate(180%)",
-            boxShadow:
-              "0 18px 50px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.04)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "14px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div>
-              MoneyCompass
+        <div className="top-nav">
+          <div className="nav-brand">
+            <div className="brand-logo-wrap">
+              <Image
+                src={logoImage}
+                alt="Money Compass logo"
+                width={42}
+                height={42}
+                className="brand-logo"
+                priority
+              />
             </div>
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "6px",
-                borderRadius: "18px",
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 24px rgba(0,0,0,0.18)",
-                flexWrap: "wrap",
-              }}
-            >
-              <button
-                onClick={() => scrollToSection("dashboard-section")}
-                style={navBtnStyle}
-              >
-                Dashboard
-              </button>
-
-              <button
-                onClick={() => scrollToSection("analytics-section")}
-                style={navBtnStyle}
-              >
-                Analytics
-              </button>
-
-              <button
-                onClick={() => scrollToSection("journey-section")}
-                style={navBtnStyle}
-              >
-                Journey Progress
-              </button>
-            </div>
+            <span className="brand-text">Money Compass</span>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div
-              style={{
-                padding: "10px 14px",
-                borderRadius: "14px",
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                color: "#cbd5e1",
-                fontSize: "13px",
-                maxWidth: "260px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
-              }}
-              title={currentUser.email}
+          <div className="nav-center">
+            <button
+              onClick={() => scrollToSection("dashboard-section")}
+              className="nav-btn"
+              aria-label="Dashboard"
+              title="Dashboard"
             >
-              {currentUser.email}
-            </div>
+              <span className="nav-btn-icon">
+                <LayoutDashboard size={18} strokeWidth={2.2} />
+              </span>
+              <span className="nav-btn-label">Dashboard</span>
+            </button>
 
-            {currentUser ? (
-              <button
-                onClick={handleLogout}
-                style={{
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  borderRadius: "16px",
-                  padding: "12px 18px",
-                  cursor: "pointer",
-                  fontWeight: 700,
-                  color: "#fff",
-                  background:
-                    "linear-gradient(135deg, rgba(239,68,68,0.95), rgba(190,24,93,0.95))",
-                  boxShadow:
-                    "0 12px 28px rgba(239,68,68,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
-                  transition: "all 0.22s ease",
-                }}
-              >
+            <button
+              onClick={() => scrollToSection("analytics-section")}
+              className="nav-btn"
+              aria-label="Analytics"
+              title="Analytics"
+            >
+              <span className="nav-btn-icon">
+                <ChartColumnBig size={18} strokeWidth={2.2} />
+              </span>
+              <span className="nav-btn-label">Analytics</span>
+            </button>
+
+            <button
+              onClick={() => scrollToSection("journey-section")}
+              className="nav-btn"
+              aria-label="Journey Progress"
+              title="Journey Progress"
+            >
+              <span className="nav-btn-icon">
+                <Map size={18} strokeWidth={2.2} />
+              </span>
+              <span className="nav-btn-label">Journey Progress</span>
+            </button>
+          </div>
+
+          <div className="nav-right" ref={profileRef}>
+            <button
+              className="profile-trigger"
+              onClick={() => setProfileOpen((prev) => !prev)}
+              aria-label="Open profile menu"
+              aria-expanded={profileOpen}
+            >
+              <span className="profile-avatar">{userInitial}</span>
+              <span className="profile-name">{displayName}</span>
+             
+            </button>
+
+            <div className={`profile-dropdown ${profileOpen ? "open" : ""}`}>
+              <div className="profile-dropdown-user">
+                <div className="profile-dropdown-avatar">{userInitial}</div>
+                <div className="profile-dropdown-text">
+                  <div className="profile-dropdown-email">{currentUser.email}</div>
+                </div>
+              </div>
+
+              <button onClick={handleLogout} className="dropdown-logout-btn">
                 Logout
               </button>
-            ) : (
-              <button
-                onClick={handleLogin}
-                style={{
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  borderRadius: "16px",
-                  padding: "12px 18px",
-                  cursor: "pointer",
-                  fontWeight: 700,
-                  color: "#fff",
-                  background:
-                    "linear-gradient(135deg, rgba(37,99,235,0.95), rgba(139,92,246,0.95))",
-                  boxShadow:
-                    "0 12px 28px rgba(59,130,246,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
-                  transition: "all 0.22s ease",
-                }}
-              >
-                Login
-              </button>
-            )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div
-        style={{
-          maxWidth: "1400px",
-          margin: "0 auto",
-          padding: "26px 20px 44px",
-        }}
-      >
-        <section
-          id="dashboard-section"
-          style={{
-            scrollMarginTop: "130px",
-            marginBottom: "30px",
-          }}
-        >
-          <div
-            style={{
-              marginBottom: "18px",
-              padding: "22px 22px 18px",
-              borderRadius: "24px",
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-              border: "1px solid rgba(255,255,255,0.08)",
-              boxShadow:
-                "0 12px 32px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.06)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: "12px",
-                flexWrap: "wrap",
-              }}
-            >
+      <div className="page-content">
+        <section id="dashboard-section" className="section-block">
+          <div className="section-hero-card">
+            <div className="section-hero-head">
               <div>
-                <h1
-                  className="main-heading"
-                  style={{ marginBottom: "6px", color: "#f8fafc" }}
-                >
+                <h1 className="main-heading" style={{ marginBottom: "6px", color: "#f8fafc" }}>
                   Dashboard
                 </h1>
-                <p
-                  style={{
-                    margin: 0,
-                    color: "#94a3b8",
-                    fontSize: "15px",
-                  }}
-                >
+                <p className="section-subtext">
                   Track your money, review your analytics, and move forward with clarity.
                 </p>
               </div>
 
               {loadingEntries && (
-                <div
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: "14px",
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "#cbd5e1",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                  }}
-                >
+                <div className="loading-pill">
                   Loading entries...
                 </div>
               )}
@@ -539,42 +460,13 @@ export default function Home() {
           </div>
         </section>
 
-        <section
-          id="analytics-section"
-          style={{
-            scrollMarginTop: "130px",
-            marginBottom: "30px",
-          }}
-        >
-          <div
-            style={{
-              padding: "18px",
-              borderRadius: "24px",
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025))",
-              border: "1px solid rgba(255,255,255,0.08)",
-              boxShadow:
-                "0 12px 32px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.05)",
-            }}
-          >
+        <section id="analytics-section" className="section-block">
+          <div className="glass-section-card">
             <Analytics userId={currentUser.id} />
           </div>
         </section>
 
-        <section
-          id="journey-section"
-          className="thirdpart-container p-4"
-          style={{
-            scrollMarginTop: "130px",
-            borderRadius: "24px",
-            padding: "22px",
-            background:
-              "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025))",
-            border: "1px solid rgba(255,255,255,0.08)",
-            boxShadow:
-              "0 12px 32px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.05)",
-          }}
-        >
+        <section id="journey-section" className="section-block thirdpart-container p-4 glass-section-card">
           <h1 className="main-heading" style={{ color: "#f8fafc" }}>
             Journey Progress
           </h1>
@@ -584,20 +476,512 @@ export default function Home() {
           <RoadmapTimeline userId={currentUser.id} />
         </section>
       </div>
+
+      <style jsx>{`
+        .home-page-shell {
+          min-height: 100vh;
+          position: relative;
+          overflow-x: hidden;
+          color: #e5eefb;
+          background:
+            radial-gradient(circle at 12% 20%, rgba(111, 66, 193, 0.22), transparent 28%),
+            radial-gradient(circle at 88% 18%, rgba(14, 165, 233, 0.18), transparent 26%),
+            radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.06), transparent 34%),
+            linear-gradient(135deg, #05070d 0%, #0b1020 45%, #040507 100%);
+        }
+
+        .ambient {
+          position: fixed;
+          border-radius: 999px;
+          filter: blur(70px);
+          opacity: 0.55;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .ambient-1 {
+          width: 280px;
+          height: 280px;
+          top: 7%;
+          left: -4%;
+          background: rgba(91, 33, 182, 0.35);
+        }
+
+        .ambient-2 {
+          width: 300px;
+          height: 300px;
+          right: -6%;
+          top: 20%;
+          background: rgba(14, 165, 233, 0.22);
+        }
+
+        .ambient-3 {
+          width: 360px;
+          height: 360px;
+          bottom: -10%;
+          left: 25%;
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .top-nav-wrap {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          padding: 12px 20px 0;
+          transition:
+            transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.35s ease,
+            padding 0.35s ease;
+          will-change: transform, opacity;
+        }
+
+        .top-nav-wrap.visible {
+          transform: translateY(0);
+          opacity: 1;
+        }
+
+        .top-nav-wrap.hidden {
+          transform: translateY(-110%);
+          opacity: 0.96;
+        }
+
+        .top-nav-wrap.scrolled {
+          padding-top: 8px;
+        }
+
+        .top-nav {
+          max-width: 1400px;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
+          align-items: center;
+          gap: 16px;
+          border-radius: 28px;
+          padding: 14px 20px;
+          background:
+            linear-gradient(145deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.4));
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          box-shadow:
+            0 18px 50px rgba(0, 0, 0, 0.38),
+            inset 0 1px 0 rgba(255, 255, 255, 0.12),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+        }
+
+        .nav-brand {
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          justify-self: start;
+        }
+
+        .brand-logo-wrap {
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+
+        .brand-logo {
+          width: 34px;
+          height: 34px;
+          object-fit: contain;
+        }
+
+        .brand-text {
+          color: #f8fafc;
+          font-size: 1.18rem;
+          font-weight: 800;
+          letter-spacing: 0.03em;
+          white-space: nowrap;
+          background: linear-gradient(90deg, #ffffff 0%, #dbeafe 40%, #c4b5fd 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          text-shadow: 0 8px 28px rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-center {
+          justify-self: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 6px;         
+        }
+
+        .nav-btn {
+          padding: 1px 6px;
+          cursor: pointer;
+          font-weight: 700;
+          font-size: 14px;
+          color: #e2e8f0;
+          white-space: nowrap;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background-color: transparent;
+        }
+
+        .nav-btn-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 0;
+        }
+
+        .nav-btn-label {
+          display: inline-flex;
+          align-items: center;
+        }
+
+        .nav-btn:hover {
+          transform: translateY(-1px);
+        }
+
+        .nav-right {
+          justify-self: end;
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .profile-trigger {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 12px 8px 8px;
+          
+          color: #f8fafc;
+          cursor: pointer;
+          
+          transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .profile-trigger:hover {
+          transform: translateY(-1px);
+          border-color: rgba(255, 255, 255, 0.16);
+        }
+
+        .profile-avatar,
+        .profile-dropdown-avatar {
+          width: 38px;
+          height: 38px;
+          border-radius: 999px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 800;
+          color: #ffffff;
+          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          box-shadow:
+            0 8px 20px rgba(59, 130, 246, 0.28),
+            inset 0 1px 0 rgba(255,255,255,0.18);
+          flex-shrink: 0;
+        }
+
+        .profile-name {
+          font-size: 14px;
+          font-weight: 700;
+          color: #e2e8f0;
+          max-width: 170px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .profile-caret {
+          font-size: 14px;
+          color: #cbd5e1;
+          transition: transform 0.2s ease;
+        }
+
+        .profile-caret.open {
+          transform: rotate(180deg);
+        }
+
+        .profile-dropdown {
+          position: absolute;
+          top: calc(100% + 12px);
+          right: 0;
+          min-width: 260px;
+          padding: 12px;
+          border-radius: 20px;
+          background:
+            linear-gradient(180deg, rgba(10, 14, 26, 0.96), rgba(17, 24, 39, 0.92));
+          border: 1px solid rgba(255,255,255,0.10);
+          box-shadow:
+            0 24px 50px rgba(0,0,0,0.35),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(8px);
+          transition: all 0.22s ease;
+          pointer-events: none;
+        }
+
+        .profile-dropdown.open {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+          pointer-events: auto;
+        }
+
+        .profile-dropdown-user {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 6px 4px 12px;
+          margin-bottom: 10px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .profile-dropdown-text {
+          min-width: 0;
+        }
+
+        
+        .profile-dropdown-email {
+          color: #94a3b8;
+          font-size: 12px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .dropdown-logout-btn {
+          width: 100%;
+          border: 1px solid rgba(255, 255, 255, 0.10);
+          border-radius: 14px;
+          padding: 12px 16px;
+          cursor: pointer;
+          font-weight: 700;
+          color: #fff;
+          background:
+            linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(190, 24, 93, 0.95));
+          box-shadow:
+            0 12px 28px rgba(239, 68, 68, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
+          transition: transform 0.2s ease;
+        }
+
+        .dropdown-logout-btn:hover {
+          transform: translateY(-1px);
+        }
+
+        .page-content {
+          position: relative;
+          z-index: 1;
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 110px 20px 44px;
+        }
+
+        .section-block {
+          scroll-margin-top: 132px;
+          margin-bottom: 30px;
+        }
+
+        .section-hero-card {
+          margin-bottom: 18px;
+          padding: 22px 22px 18px;
+          border-radius: 24px;
+          background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow:
+            0 12px 32px rgba(0, 0, 0, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+        }
+
+        .section-hero-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .section-subtext {
+          margin: 0;
+          color: #94a3b8;
+          font-size: 15px;
+        }
+
+        .loading-pill {
+          padding: 10px 14px;
+          border-radius: 14px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          color: #cbd5e1;
+          font-size: 14px;
+          font-weight: 600;
+        }
+
+        .glass-section-card {
+          border-radius: 24px;
+          padding: 18px;
+          background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025));
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow:
+            0 12px 32px rgba(0, 0, 0, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+        }
+
+        @media (max-width: 1100px) {
+          .top-nav {
+            grid-template-columns: auto 1fr auto;
+            gap: 12px;
+          }
+
+          .nav-center {
+            justify-self: stretch;
+          }
+
+          .nav-btn {
+            padding: 10px 13px;
+            font-size: 13px;
+          }
+        }
+
+        @media (max-width: 900px) {
+          .top-nav-wrap {
+            padding: 10px 14px 0;
+          }
+
+          .top-nav {
+            grid-template-columns: auto 1fr auto;
+            padding: 12px 14px;
+            border-radius: 22px;
+            gap: 10px;
+          }
+            .nav-btn-label {
+              display: none;
+            }
+
+            .nav-btn-icon {
+              width: 18px;
+              height: 18px;
+            }
+
+          .brand-text {
+            display: none;
+          }
+
+          .brand-logo-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+          }
+
+          .brand-logo {
+            width: 30px;
+            height: 30px;
+          }
+
+          .nav-center {
+            gap: 8px;
+            padding: 5px;
+            min-width: 0;
+          }
+
+          .nav-btn {
+            flex: 1 1 0;
+            min-width: 0;
+            font-size: 12px;
+            padding: 10px 10px;
+          }
+
+          .profile-name {
+            display: none;
+          }
+
+          .profile-trigger {
+            padding: 6px 8px 6px 6px;
+          }
+
+          .profile-caret {
+            font-size: 12px;
+
+          }
+
+          .page-content {
+            padding: 100px 14px 34px;
+          }
+        }
+
+        @media (max-width: 560px) {
+          .home-page-shell {
+            overflow-x: hidden;
+          }
+
+          .top-nav-wrap {
+            padding: 8px 10px 0;
+          }
+
+          .top-nav {
+            grid-template-columns: auto 1fr auto;
+            border-radius: 20px;
+            gap: 8px;
+            padding: 10px;
+          }
+
+          .nav-center {
+            gap: 6px;
+            padding: 4px;
+          }
+
+          .nav-btn {
+            padding: 9px 8px;
+            border-radius: 12px;
+          }
+          .profile-dropdown {
+            right: -4px;
+            min-width: 220px;
+          }
+
+          .page-content {
+            padding: 96px 10px 26px;
+          }
+
+          .section-block {
+            scroll-margin-top: 118px;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .nav-btn {
+            font-size: 10.5px;
+            padding: 8px 6px;
+          }
+
+          .brand-logo-wrap {
+            width: 40px;
+            height: 40px;
+          }
+
+          .profile-avatar,
+          .profile-dropdown-avatar {
+            width: 34px;
+            height: 34px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
-
-const navBtnStyle: React.CSSProperties = {
-  border: "1px solid transparent",
-  background:
-    "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
-  padding: "10px 16px",
-  borderRadius: "14px",
-  cursor: "pointer",
-  fontWeight: 700,
-  fontSize: "14px",
-  color: "#e2e8f0",
-  transition: "all 0.22s ease",
-  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
-};
