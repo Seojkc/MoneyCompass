@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import "../CSS/Dashboard.css";
 import MonthCard from "./MonthSliderCard";
 import FinanceCards from "./FinanceCards";
@@ -46,37 +47,65 @@ export default function DashboardSection({
   handleCsvData,
   deleteEntry,
 }: Props) {
+  const [isMobileToolsCollapsed, setIsMobileToolsCollapsed] = useState(false);
+
   return (
     <section id="dashboard-section" className="dashboard-section-block">
       <div className="dashboard-section-hero-head">
         <div>
           <h1 className="dashboard-main-heading">Dashboard</h1>
         </div>
-
-        
       </div>
 
       <div className="dashboard-firstpart-container">
-        <MonthCard onChange={setSelectedMonth} />
-        
+        <MonthCard value={selectedMonth} onChange={setSelectedMonth} />
         <FinanceCards selectedDate={selectedMonth} entries={entries} />
       </div>
 
       <div className="dashboard-secondpart-container">
         <div className="dashboard-quick-add-container">
-          <QuickAddEntry
-            type="income"
-            lastUsedCategory={lastIncomeCategory}
-            onAdd={(cat, amt) => addQuickEntry("income", cat, amt)}
-          />
+          <div className="dashboard-mobile-tools-head">
+            <button
+              type="button"
+              className={`dashboard-mobile-tools-toggle ${
+                isMobileToolsCollapsed ? "is-collapsed" : ""
+              }`}
+              onClick={() => setIsMobileToolsCollapsed((prev) => !prev)}
+              aria-expanded={!isMobileToolsCollapsed}
+              aria-label={
+                isMobileToolsCollapsed ? "Expand quick tools" : "Collapse quick tools"
+              }
+            >
+                <span className="dashboard-mobile-tools-toggle-icon">
+                {isMobileToolsCollapsed ? "+" : "−"}
+              </span>
+              <span className="dashboard-mobile-tools-toggle-text">Quick tools</span>
+              
+            </button>
+          </div>
 
-          <QuickAddEntry
-            type="expense"
-            lastUsedCategory={lastExpenseCategory}
-            onAdd={(cat, amt) => addQuickEntry("expense", cat, amt)}
-          />
+          <div
+            className={`dashboard-mobile-tools-panel ${
+              isMobileToolsCollapsed ? "is-collapsed" : ""
+            }`}
+          >
+            <div className="dashboard-mobile-tools-panel-inner">
+              <QuickAddEntry
+                type="income"
+                lastUsedCategory={lastIncomeCategory}
+                onAdd={(cat, amt) => addQuickEntry("income", cat, amt)}
+              />
 
-          <CsvImporter onData={handleCsvData} />
+              <QuickAddEntry
+                type="expense"
+                lastUsedCategory={lastExpenseCategory}
+                onAdd={(cat, amt) => addQuickEntry("expense", cat, amt)}
+              />
+
+              <CsvImporter onData={handleCsvData} />
+            </div>
+          </div>
+
           <ExpensePieChart selectedDate={selectedMonth} entries={entries} />
         </div>
 
