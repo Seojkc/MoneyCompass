@@ -4,16 +4,11 @@ import "./CSS/Dashboard.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import MonthCard from "./Components/MonthSliderCard";
 import RoadmapTimeline from "./Components/AnalyticsFolder/RoadmapTimeline";
-import FinanceCards from "./Components/FinanceCards";
-import QuickAddEntry from "./Components/QuickAddEntry";
-import IncomeExpenseTable from "./Components/IncomeExpenseTable";
-import ExpensePieChart from "./Components/ExpensePieChart";
-import CsvImporter, { ImportedRow } from "./Components/CsvImporter";
 import logoImage from "../asset/logo.png";
 import { LayoutDashboard, ChartColumnBig, Map } from "lucide-react";
-
+import DashboardSection from "./Components/Dashboard";
+import CsvImporter, { ImportedRow } from ".//Components/CsvImporter";
 
 import {
   listEntriesByUser,
@@ -122,6 +117,44 @@ export default function Home() {
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    fetchEntriesForMonth(currentUser.id, selectedMonth);
+  }, [currentUser?.id, selectedMonth]);
+
+   const fetchEntriesForMonth = async (userId: string, monthDate: Date) => {
+    setLoadingEntries(true);
+
+    try {
+      const year = monthDate.getFullYear();
+      const month = monthDate.getMonth() + 1; // JS is 0-based, API wants 1-12
+
+      const apiEntries = await listEntriesByUser({
+        userId,
+        year,
+        month,
+      });
+
+      const normalizedEntries: Entry[] = (apiEntries ?? []).map((item) => ({
+        id: String(item.id),
+        type: item.type === "income" ? "income" : "expense",
+        name: item.name ?? "Unknown",
+        category: item.category ?? "Other",
+        amount: Number(item.amount ?? 0),
+        date: new Date(item.date),
+      }));
+
+      setEntries(normalizedEntries);
+    } catch (err) {
+      console.error("Failed to fetch entries for selected month:", err);
+      setEntries([]);
+    } finally {
+      setLoadingEntries(false);
+    }
+  };
+
   const addQuickEntry = async (
     type: "income" | "expense",
     category: string,
@@ -166,6 +199,7 @@ export default function Home() {
       });
 
       setEntries((prev) => prev.map((e) => (e.id === tempId ? created : e)));
+      await fetchEntriesForMonth(currentUser.id, selectedMonth);
     } catch (err) {
       console.error("Failed to create entry:", err);
       setEntries((prev) => prev.filter((e) => e.id !== tempId));
@@ -181,6 +215,10 @@ export default function Home() {
 
       if (!res?.deleted) {
         throw new Error("Backend did not confirm deletion");
+      }
+
+      if (currentUser?.id) {
+        await fetchEntriesForMonth(currentUser.id, selectedMonth);
       }
     } catch (err) {
       console.error("Failed to delete entry:", err);
@@ -401,64 +439,18 @@ export default function Home() {
       </div>
 
       <div className="page-content">
-        <section id="dashboard-section" className="section-block">
-          <div className="section-hero-card">
-            <div className="section-hero-head">
-              <div>
-                <h1 className="main-heading" style={{ marginBottom: "6px", color: "#f8fafc" }}>
-                  Dashboard
-                </h1>
-                <p className="section-subtext">
-                  Track your money, review your analytics, and move forward with clarity.
-                </p>
-              </div>
-
-              {loadingEntries && (
-                <div className="loading-pill">
-                  Loading entries...
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="firstpart-container">
-            <MonthCard onChange={setSelectedMonth} />
-            <FinanceCards selectedDate={selectedMonth} entries={entries} />
-          </div>
-
-          <div className="secondpart-container">
-            <div className="quick-add-container">
-              <QuickAddEntry
-                type="income"
-                lastUsedCategory={lastIncomeCategory}
-                onAdd={(cat, amt) => addQuickEntry("income", cat, amt)}
-              />
-
-              <QuickAddEntry
-                type="expense"
-                lastUsedCategory={lastExpenseCategory}
-                onAdd={(cat, amt) => addQuickEntry("expense", cat, amt)}
-              />
-
-              <CsvImporter onData={handleCsvData} />
-              <ExpensePieChart selectedDate={selectedMonth} entries={entries} />
-            </div>
-
-            <div className="TransactionTable-container">
-              <IncomeExpenseTable
-                title="Income"
-                entries={entriesThisMonth.filter((e) => e.type === "income")}
-                onDelete={deleteEntry}
-              />
-
-              <IncomeExpenseTable
-                title="Expense"
-                entries={entriesThisMonth.filter((e) => e.type === "expense")}
-                onDelete={deleteEntry}
-              />
-            </div>
-          </div>
-        </section>
+        <DashboardSection
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+          entries={entries}
+          entriesThisMonth={entriesThisMonth}
+          loadingEntries={loadingEntries}
+          lastIncomeCategory={lastIncomeCategory}
+          lastExpenseCategory={lastExpenseCategory}
+          addQuickEntry={addQuickEntry}
+          handleCsvData={handleCsvData}
+          deleteEntry={deleteEntry}
+        />
 
         <section id="analytics-section" className="section-block">
           <div className="glass-section-card">
@@ -632,15 +624,19 @@ export default function Home() {
         }
 
         .nav-btn-icon {
-          display: inline-flex;
+          display: none;
           align-items: center;
           justify-content: center;
           line-height: 0;
+          
         }
 
         .nav-btn-label {
           display: inline-flex;
           align-items: center;
+          font-size: 20px;
+          margin-left: 8px;
+          font-weight: 200;
         }
 
         .nav-btn:hover {
@@ -792,19 +788,7 @@ export default function Home() {
           margin-bottom: 30px;
         }
 
-        .section-hero-card {
-          margin-bottom: 18px;
-          padding: 22px 22px 18px;
-          border-radius: 24px;
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow:
-            0 12px 32px rgba(0, 0, 0, 0.24),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-        }
+        
 
         .section-hero-head {
           display: flex;
@@ -875,6 +859,7 @@ export default function Home() {
             }
 
             .nav-btn-icon {
+              display: inline-flex;
               width: 18px;
               height: 18px;
             }

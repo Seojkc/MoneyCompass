@@ -1,9 +1,10 @@
 .main-heading{
-    font-size: 48px;
-    font-weight: bold;
-    color: #cfcfcf;
-    margin-top: 50px;
-    margin-left:50px;
+     margin: 0 0 6px 0;
+  color: #f8fafc;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
 }
 
 .firstpart-container{

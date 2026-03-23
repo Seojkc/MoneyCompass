@@ -1,31 +1,59 @@
-import { useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import "../CSS/MonthCard.css";
 
 type Props = {
   onChange: (date: Date) => void;
+  value?: Date;
 };
 
-export default function MonthCard({ onChange }: Props) {
-  const [date, setDate] = useState<Date>(new Date());
+export default function MonthCard({ onChange, value }: Props) {
+  const [date, setDate] = useState<Date>(value ?? new Date());
+
+  useEffect(() => {
+    if (value) setDate(value);
+  }, [value]);
 
   const changeMonth = (direction: -1 | 1) => {
     const newDate = new Date(date);
-    newDate.setMonth(date.getMonth() + direction);
-
-    setDate(newDate);     // update child
-    onChange(newDate);   // update parent
+    newDate.setMonth(newDate.getMonth() + direction);
+    setDate(newDate);
+    onChange(newDate);
   };
 
-  const monthYear = date.toLocaleString("default", {
+  const month = date.toLocaleString("default", {
     month: "long",
-    year: "numeric",
   });
 
+  const year = date.getFullYear();
+
   return (
-    <div className="month-wrapper">
-      <button className="nav-btn" onClick={() => changeMonth(-1)}>◀</button>
-      <div className="month-card">{monthYear}</div>
-      <button className="nav-btn" onClick={() => changeMonth(1)}>▶</button>
+    <div className="month-card-shell">
+      <button
+        type="button"
+        className="month-nav-btn"
+        onClick={() => changeMonth(-1)}
+        aria-label="Previous month"
+      >
+        <span className="month-nav-icon">‹</span>
+      </button>
+
+      <div className="month-card-modern">
+        <div className="month-card-content">
+          <div className="month-name">{month}</div>
+          <div className="month-year">{year}</div>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        className="month-nav-btn"
+        onClick={() => changeMonth(1)}
+        aria-label="Next month"
+      >
+        <span className="month-nav-icon">›</span>
+      </button>
     </div>
   );
 }

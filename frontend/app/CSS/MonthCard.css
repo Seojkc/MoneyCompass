@@ -1,32 +1,112 @@
-.month-wrapper {
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap");
+
+.month-card-shell {
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: center;
+  width: 100%;
+  flex-wrap: nowrap;
 }
 
-.month-card {
-  min-width: 220px;
-  padding: 20px;
+.month-card-modern {
+  position: relative;
+  min-width: 240px;
+  overflow: hidden;
+  
+}
+
+
+
+.month-card-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   text-align: center;
-  font-size: 22px;
-  font-weight: bold;
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease;
-  color: black;
+  z-index: 1;
 }
 
-.nav-btn {
-  font-size: 20px;
-  border: none;
-  background: #222;
-  color: white;
-  padding: 10px 14px;
-  border-radius: 50%;
+.month-name {
+  font-family: "Dancing Script", cursive;
+  font-size: clamp(2.5rem, 4vw, 3rem);
+  line-height: 1;
+  font-weight: 500;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+}
+
+.month-year {
+  font-family: "Dancing Script", cursive;
+  margin-top: 6px;
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.month-nav-btn {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+ 
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.nav-btn:hover {
-  opacity: 0.8;
+.month-nav-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  border-color: rgba(255, 255, 255, 0.22);
+ 
+}
+
+.month-nav-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.month-nav-icon {
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 500;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 900px) {
+  .month-card-shell {
+    gap: 12px;
+  }
+
+  .month-card-modern {
+    min-width: 190px;
+    border-radius: 20px;
+  }
+
+  .month-name {
+    font-size: clamp(2.5rem, 8vw, 2.4rem);
+  }
+
+  .month-year {
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+  }
+
+  .month-nav-btn {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+  .month-nav-icon {
+    font-size: 2rem;
+  }
 }
