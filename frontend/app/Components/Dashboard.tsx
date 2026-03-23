@@ -76,10 +76,8 @@ export default function DashboardSection({
                 isMobileToolsCollapsed ? "Expand quick tools" : "Collapse quick tools"
               }
             >
-                <span className="dashboard-mobile-tools-toggle-icon">
-                {isMobileToolsCollapsed ? "+" : "−"}
-              </span>
-              <span className="dashboard-mobile-tools-toggle-text">Quick tools</span>
+              
+              <span className="dashboard-mobile-tools-toggle-text">{isMobileToolsCollapsed ? "Add Entry" : " Hide  Entry"}</span>
               
             </button>
           </div>
