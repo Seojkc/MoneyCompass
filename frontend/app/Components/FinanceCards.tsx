@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import "../CSS/FinanceCards.css";
 
@@ -7,7 +7,7 @@ type Entry = {
   type: "income" | "expense";
   name: string;
   category: string;
-  amount: number; // always positive in your entries
+  amount: number;
   date: Date;
 };
 
@@ -21,20 +21,43 @@ export default function FinanceCards({ selectedDate, entries }: Props) {
   const net = income - expense;
 
   return (
-    <div className="cards-wrapper">
-      <div className="card">
-        <p>Total Income 📈</p>
-        <h2 className="green">${income.toLocaleString()}</h2>
+    <div className="finance-cards-wrapper">
+      <div className="finance-card finance-card-income">
+        <div className="finance-card-top">
+          <div className="finance-card-text">
+            <p className="finance-card-label">Total Income</p>
+          </div>
+        </div>
+
+        <h2 className="finance-card-value finance-green">
+          ${income.toLocaleString()}
+        </h2>
       </div>
 
-      <div className="card">
-        <p>Total Expense 📉</p>
-        <h2 className="red">${expense.toLocaleString()}</h2>
+      <div className="finance-card finance-card-expense">
+        <div className="finance-card-top">
+          <div className="finance-card-text">
+            <p className="finance-card-label">Total Expense</p>
+          </div>
+        </div>
+
+        <h2 className="finance-card-value finance-red">
+          ${expense.toLocaleString()}
+        </h2>
       </div>
 
-      <div className="card">
-        <p>Net Cashflow 💰</p>
-        <h2 className={net < 0 ? "red" : "green"}>
+      <div className="finance-card finance-card-net">
+        <div className="finance-card-top">
+          <div className="finance-card-text">
+            <p className="finance-card-label">Net Cashflow</p>
+          </div>
+        </div>
+
+        <h2
+          className={`finance-card-value ${
+            net < 0 ? "finance-red" : "finance-green"
+          }`}
+        >
           ${net.toLocaleString()}
         </h2>
       </div>

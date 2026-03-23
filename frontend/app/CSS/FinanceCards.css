@@ -1,33 +1,129 @@
-.cards-wrapper {
+.finance-cards-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  width: 100%;
+}
+
+.finance-card {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  padding: 20px;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04)),
+    rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.finance-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 4px;
+  opacity: 0.95;
+}
+
+.finance-card-income::before {
+  background: linear-gradient(90deg, #22c55e, #86efac);
+}
+
+.finance-card-expense::before {
+  background: linear-gradient(90deg, #ef4444, #fca5a5);
+}
+
+.finance-card-net::before {
+  background: linear-gradient(90deg, #38bdf8, #a78bfa);
+}
+
+.finance-card-top {
   display: flex;
-  gap: 20px;
-  margin-top: 25px;
+  align-items: center;
+  gap: 14px;
 }
 
-.card {
-  flex: 1;
-  background: white;
-  padding: 18px;
-  border-radius: 14px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  text-align: center;
+.finance-card-text {
+  min-width: 0;
+  width: 100%;
 }
 
-.card p {
-  font-size: 15px;
-  opacity: 0.8;
-  color: #000000;
+.finance-card-label {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 0.98rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
 }
 
-.card h2 {
-  margin-top: 10px;
-  font-size: 26px;
+.finance-card-value {
+  margin: 18px 0 0;
+  font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.5;
+  word-break: break-word;
 }
 
-.green {
-  color: #16a34a;
+.finance-green {
+  color: #4ade80;
 }
 
-.red {
-  color: #dc2626;
+.finance-red {
+  color: #f87171;
+}
+
+@media (max-width: 1024px) {
+  .finance-cards-wrapper {
+    gap: 12px;
+  }
+
+  .finance-card {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .finance-card-label {
+    font-size: 0.86rem;
+  }
+
+  .finance-card-value {
+    margin-top: 12px;
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .finance-cards-wrapper {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .finance-card {
+    padding: 12px 10px;
+    border-radius: 14px;
+  }
+
+  .finance-card-top {
+    gap: 0;
+  }
+
+  .finance-card-label {
+    font-size: 0.8rem;
+    font-weight: 400;
+  }
+
+  .finance-card-value {
+    margin-top: 8px;
+    font-size: 1.2rem;
+    line-height: 1.5;
+    letter-spacing: -0.02em;
+  }
 }
