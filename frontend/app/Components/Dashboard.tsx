@@ -53,7 +53,7 @@ export default function DashboardSection({
     <section id="dashboard-section" className="dashboard-section-block">
       <div className="dashboard-section-hero-head">
         <div>
-          <h1 className="dashboard-main-heading">Dashboard</h1>
+          {/* <h1 className="dashboard-main-heading">Dashboard</h1> */}
         </div>
       </div>
 
