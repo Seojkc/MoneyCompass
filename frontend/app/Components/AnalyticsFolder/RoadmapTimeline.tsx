@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import "../../CSS/RoadmapTimeLine.css";
 import Tradegraph from "./tradegraph";
 import StarterEmergencyFundCard from "./StarterEmergency";
 import EliminateHighInterestDebtCard from "./EliminateHighInterestDebtCard";
@@ -87,9 +88,7 @@ export default function RoadmapTimeline({ userId }: Props) {
       }
     };
 
-    if (userId) {
-      loadSteps();
-    }
+    if (userId) loadSteps();
 
     return () => {
       mounted = false;
@@ -127,15 +126,13 @@ export default function RoadmapTimeline({ userId }: Props) {
   const journeyList = useMemo(() => {
     if (loadingSteps) {
       return (
-        <div className="space-y-3">
+        <div className="roadmap-skeleton-list">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="flex gap-3">
-                <div className="mt-1 h-3 w-3 rounded-full border border-white/10 bg-white/10" />
-                <div className="flex-1">
-                  <div className="h-3 w-3/4 rounded bg-white/10" />
-                  <div className="mt-2 h-2 w-1/2 rounded bg-white/5" />
-                </div>
+            <div key={i} className="roadmap-skeleton-row">
+              <div className="roadmap-skeleton-dot" />
+              <div className="roadmap-skeleton-lines">
+                <div className="roadmap-skeleton-line-lg" />
+                <div className="roadmap-skeleton-line-sm" />
               </div>
             </div>
           ))}
@@ -145,9 +142,9 @@ export default function RoadmapTimeline({ userId }: Props) {
 
     if (stepsError) {
       return (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+        <div className="roadmap-message error">
           {stepsError}
-          <div className="mt-2 text-xs text-red-200/70">
+          <div className="roadmap-message-tip">
             Tip: confirm roadmap API is working for the logged-in user.
           </div>
         </div>
@@ -155,11 +152,11 @@ export default function RoadmapTimeline({ userId }: Props) {
     }
 
     if (!visibleSteps.length) {
-      return <div className="text-sm text-white/60">No roadmap steps found.</div>;
+      return <div className="roadmap-message empty">No roadmap steps found.</div>;
     }
 
     return (
-      <div className="space-y-3">
+      <div className="roadmap-list">
         {visibleSteps.map((s, idx) => {
           const activeNow = active === s.key;
           const done = isCompleted(s.key);
@@ -169,38 +166,25 @@ export default function RoadmapTimeline({ userId }: Props) {
             <button
               key={s.key}
               onClick={() => scrollTo(s.key)}
-              className="group w-full text-left"
+              className="roadmap-item-btn"
+              type="button"
             >
-              <div className="relative flex gap-3">
-                <span
-                  className={[
-                    "mt-1 h-3 w-3 rounded-full border transition-colors",
-                    done
-                      ? isFi
-                        ? "border-yellow-400 bg-yellow-400"
-                        : "border-green-500 bg-green-500"
-                      : activeNow
-                        ? "border-white bg-white"
-                        : "border-white/20 bg-white/10",
-                  ].join(" ")}
-                />
+              <div className="roadmap-item-row">
+                
 
-                <div className="min-w-0">
+                <div className="roadmap-item-content">
                   <div
                     className={[
-                      "text-sm font-medium leading-tight transition-colors",
-                      done
-                        ? isFi
-                          ? "text-yellow-300"
-                          : "text-green-400"
-                        : activeNow
-                          ? "text-white"
-                          : "text-white/70 group-hover:text-white",
-                    ].join(" ")}
+                      "roadmap-item-title",
+                      done ? (isFi ? "fi-done" : "done") : "",
+                      !done && activeNow ? "active" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                   >
                     {idx + 1}. {s.title}
                   </div>
-                  <div className="text-xs text-white/50">{s.subtitle}</div>
+                  <div className="roadmap-item-subtitle">{s.subtitle}</div>
                 </div>
               </div>
             </button>
@@ -211,28 +195,39 @@ export default function RoadmapTimeline({ userId }: Props) {
   }, [visibleSteps, active, loadingSteps, stepsError, completed]);
 
   return (
-    <div className="w-full">
-      <div className="top-0 z-20 border-b border-white/10 bg-black/30 backdrop-blur">
-        <div className="grid grid-cols-1 gap-6 p-4 md:grid-cols-[280px_1fr]">
-          <div className="rounded-xl border bg-transparent p-4">
-            <div className="mb-3 text-sm font-semibold text-white">
-              Your Money Journey
-            </div>
+    <div className="roadmap-shell">
+      <div className="roadmap-top">
+        <div className="roadmap-top-grid">
+          <div className="roadmap-panel roadmap-panel--journey">
+            <div className="roadmap-panel-inner">
+              <div className="roadmap-journey-header">
+                <div>
+                  <div className="roadmap-eyebrow">Roadmap</div>
+                  <div className="roadmap-title">Your Money Journey</div>
+                </div>
 
-            <div className="relative pl-4">
-              <div className="absolute bottom-0 left-2 top-0 w-px bg-white/10" />
-              {journeyList}
+                <div className="roadmap-journey-badge">
+                  {visibleSteps.length} Steps
+                </div>
+              </div>
+
+              <div className="roadmap-journey-wrap">
+                <div className="roadmap-journey-line" />
+                {journeyList}
+              </div>
             </div>
           </div>
 
-          <div className="rounded-xl border bg-transparent p-4">
-            <Tradegraph moneySpent={2400} category="Groceries" />
+          <div className="roadmap-trade-card">
+            <div className="roadmap-panel-inner">
+              <Tradegraph moneySpent={2400} category="Groceries" />
+            </div>
           </div>
         </div>
       </div>
 
-      <main className="space-y-8 p-4">
-        <section id="starter-fund" className="scroll-mt-24">
+      <main className="roadmap-sections">
+        <section id="starter-fund" className="roadmap-section">
           <StarterEmergencyFundCard
             userId={userId}
             stepKey="starter-fund"
@@ -243,7 +238,7 @@ export default function RoadmapTimeline({ userId }: Props) {
           />
         </section>
 
-        <section id="debt" className="scroll-mt-24">
+        <section id="debt" className="roadmap-section">
           <EliminateHighInterestDebtCard
             userId={userId}
             stepKey="debt"
@@ -251,7 +246,7 @@ export default function RoadmapTimeline({ userId }: Props) {
           />
         </section>
 
-        <section id="insurance" className="scroll-mt-24">
+        <section id="insurance" className="roadmap-section">
           <InsuranceCard
             userId={userId}
             stepKey="insurance"
@@ -259,7 +254,7 @@ export default function RoadmapTimeline({ userId }: Props) {
           />
         </section>
 
-        <section id="full-fund" className="scroll-mt-24">
+        <section id="full-fund" className="roadmap-section">
           <FullEmergencyFundCard
             userId={userId}
             stepKey="full-fund"
@@ -267,7 +262,7 @@ export default function RoadmapTimeline({ userId }: Props) {
           />
         </section>
 
-        <section id="automate" className="scroll-mt-24">
+        <section id="automate" className="roadmap-section">
           <AutomateSavingCard
             userId={userId}
             stepKey="automate"
@@ -277,7 +272,7 @@ export default function RoadmapTimeline({ userId }: Props) {
           />
         </section>
 
-        <section id="invest" className="scroll-mt-24">
+        <section id="invest" className="roadmap-section">
           <InvestCard
             userId={userId}
             stepKey="invest"
@@ -285,7 +280,7 @@ export default function RoadmapTimeline({ userId }: Props) {
           />
         </section>
 
-        <section id="income" className="scroll-mt-24">
+        <section id="income" className="roadmap-section">
           <IncreaseIncomeCard
             userId={userId}
             stepKey="income"
@@ -293,8 +288,8 @@ export default function RoadmapTimeline({ userId }: Props) {
           />
         </section>
 
-        <section id="fi" className="scroll-mt-24">
-          {allCoreStepsCompleted && <FinancialIndependenceCard userId={userId}/>}
+        <section id="fi" className="roadmap-section">
+          {allCoreStepsCompleted && <FinancialIndependenceCard userId={userId} />}
         </section>
       </main>
     </div>

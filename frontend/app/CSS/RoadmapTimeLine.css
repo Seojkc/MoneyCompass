@@ -1,0 +1,788 @@
+.roadmap-shell {
+  width: 100%;
+}
+
+.roadmap-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  
+}
+
+.roadmap-top-grid {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.roadmap-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.roadmap-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top left, rgba(96,165,250,0.12), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(167,139,250,0.1), transparent 28%);
+}
+
+.roadmap-panel-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.roadmap-title {
+  margin: 0 0 14px 0;
+  color: #ffffff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.roadmap-panel--journey {
+  padding: 18px;
+}
+
+.roadmap-journey-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.roadmap-eyebrow {
+  color: rgba(191, 219, 254, 0.72);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.roadmap-journey-badge {
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
+  color: #dbeafe;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.roadmap-journey-wrap {
+  position: relative;
+  padding-left: 20px;
+}
+
+.roadmap-journey-line {
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 0, 0, 0.55) 0%,
+    rgba(30, 255, 0, 0.596) 100%
+  );
+  box-shadow: 0 0 18px rgba(96,165,250,0.12);
+}
+
+.roadmap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.roadmap-item-btn {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.roadmap-item-card {
+  position: relative;
+  border-radius: 18px;
+  padding: 12px 12px 12px 0;
+  background: transparent;
+  border: 1px solid transparent;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.roadmap-item-btn:hover .roadmap-item-card {
+  transform: translateX(3px);
+  background: rgba(255,255,255,0.035);
+  border-color: rgba(255,255,255,0.06);
+}
+
+.roadmap-item-card.active {
+  background: linear-gradient(180deg, rgba(96,165,250,0.10), rgba(255,255,255,0.03));
+  border-color: rgba(96,165,250,0.22);
+  box-shadow:
+    0 10px 22px rgba(0,0,0,0.14),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.roadmap-item-card.done {
+  background: linear-gradient(180deg, rgba(34,197,94,0.09), rgba(255,255,255,0.02));
+  border-color: rgba(34,197,94,0.18);
+}
+
+.roadmap-item-card.fi-done {
+  background: linear-gradient(180deg, rgba(250,204,21,0.10), rgba(255,255,255,0.02));
+  border-color: rgba(250,204,21,0.22);
+}
+
+.roadmap-item-row {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.roadmap-step-marker {
+  position: relative;
+  flex: 0 0 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.roadmap-dot {
+  position: relative;
+  margin-top: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,0.22);
+  background: #0f172a;
+  transition: all 0.22s ease;
+  box-shadow:
+    0 0 0 4px rgba(255,255,255,0.02),
+    0 0 0 0 rgba(255,255,255,0);
+}
+
+.roadmap-dot.active {
+  background: #60a5fa;
+  border-color: #93c5fd;
+  box-shadow:
+    0 0 0 5px rgba(96,165,250,0.14),
+    0 0 18px rgba(96,165,250,0.28);
+}
+
+.roadmap-dot.done {
+  background: #22c55e;
+  border-color: #4ade80;
+  box-shadow:
+    0 0 0 5px rgba(34,197,94,0.12),
+    0 0 18px rgba(34,197,94,0.22);
+}
+
+.roadmap-dot.fi-done {
+  background: #facc15;
+  border-color: #fde047;
+  box-shadow:
+    0 0 0 5px rgba(250,204,21,0.12),
+    0 0 18px rgba(250,204,21,0.22);
+}
+
+.roadmap-item-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.roadmap-item-topline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.roadmap-step-number {
+  color: rgba(148,163,184,0.85);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.roadmap-status-pill {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.18);
+  color: #86efac;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.roadmap-status-pill.current {
+  background: rgba(96,165,250,0.12);
+  border-color: rgba(96,165,250,0.18);
+  color: #93c5fd;
+}
+
+.roadmap-status-pill.fi {
+  background: rgba(250,204,21,0.12);
+  border-color: rgba(250,204,21,0.22);
+  color: #fde047;
+}
+
+.roadmap-item-title {
+  color: rgb(255, 255, 255);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  transition: color 0.2s ease;
+}
+
+.roadmap-item-title.active {
+  color: #ffffff;
+}
+
+.roadmap-item-title.done {
+  color: #5bff95;
+}
+
+.roadmap-item-title.fi-done {
+  color: #fde68a;
+}
+
+.roadmap-item-subtitle {
+  margin-top: 3px;
+  color: rgba(203,213,225,0.52);
+  font-size: 0.76rem;
+  line-height: 1.4;
+ margin-left: 17px;
+  margin-bottom: 5px;
+}
+
+
+.roadmap-trade-card {
+  min-width: 0;
+}
+
+.roadmap-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 24px;}
+
+.roadmap-section {
+  scroll-margin-top: 100px;
+}
+
+.roadmap-message {
+  border-radius: 16px;
+  padding: 12px;
+  font-size: 0.9rem;
+}
+
+.roadmap-message.error {
+  border: 1px solid rgba(239,68,68,0.28);
+  background: rgba(239,68,68,0.10);
+  color: #fecaca;
+}
+
+.roadmap-message.empty {
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.68);
+}
+
+.roadmap-message-tip {
+  margin-top: 6px;
+  font-size: 0.76rem;
+  color: rgba(254,202,202,0.72);
+}
+
+.roadmap-skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.roadmap-skeleton-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.roadmap-skeleton-dot {
+  margin-top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.08);
+}
+
+.roadmap-skeleton-lines {
+  flex: 1;
+}
+
+.roadmap-skeleton-line-lg,
+.roadmap-skeleton-line-sm {
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  animation: roadmapPulse 1.4s ease-in-out infinite;
+}
+
+.roadmap-skeleton-line-lg {
+  width: 74%;
+  height: 12px;
+}
+
+.roadmap-skeleton-line-sm {
+  width: 48%;
+  height: 8px;
+  margin-top: 8px;
+  background: rgba(255,255,255,0.05);
+}
+
+@keyframes roadmapPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@media (max-width: 980px) {
+  .roadmap-top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .roadmap-panel {
+    border-radius: 20px;
+  }
+}
+
+
+
+.trade-card-shell {
+  width: 100%;
+  min-width: 0;
+}
+
+.trade-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.trade-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top left, rgba(96,165,250,0.10), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(74,222,128,0.08), transparent 26%);
+}
+
+.trade-card-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.trade-card-title-wrap {
+  min-width: 0;
+}
+
+.trade-card-eyebrow {
+  color: rgba(191,219,254,0.72);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.trade-card-title {
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.trade-card-subtitle {
+  margin-top: 6px;
+  color: rgba(203,213,225,0.64);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+
+.trade-risk-row {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trade-risk-label {
+  color: rgba(226,232,240,0.76);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.trade-risk-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.trade-risk-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: transparent;
+  color: rgba(226,232,240,0.72);
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.trade-risk-btn:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.trade-risk-btn.active {
+  background: linear-gradient(135deg, rgba(96,165,250,0.22), rgba(167,139,250,0.18));
+  color: #ffffff;
+  box-shadow:
+    0 8px 16px rgba(96,165,250,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.trade-stat-row {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trade-price-block {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.trade-price-main {
+  color: #ffffff;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.trade-price-currency {
+  color: rgba(203,213,225,0.7);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.trade-performance {
+  text-align: right;
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.trade-performance.up {
+  color: #86efac;
+}
+
+.trade-performance.down {
+  color: #fca5a5;
+}
+
+.trade-meta {
+  position: relative;
+  z-index: 1;
+  margin-top: 5px;
+  color: rgba(203,213,225,0.54);
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
+.trade-chart-wrap {
+  position: relative;
+  z-index: 1;
+  margin-top: 14px;
+  height: 270px;
+  width: 100%;
+}
+
+.trade-insight-card {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.trade-insight-label {
+  color: rgba(191,219,254,0.8);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.trade-insight-text {
+  margin: 0;
+  color: rgba(248,250,252,0.86);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.trade-insight-text.muted {
+  color: rgba(203,213,225,0.6);
+}
+
+.trade-strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.trade-insight-result {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.trade-insight-result.up {
+  color: #86efac;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.18);
+}
+
+.trade-insight-result.down {
+  color: #fca5a5;
+  background: rgba(239,68,68,0.10);
+  border: 1px solid rgba(239,68,68,0.18);
+}
+
+.trade-tooltip {
+  background: rgba(8,15,30,0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 10px 12px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+}
+
+.trade-tooltip-label {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.trade-tooltip-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+
+@media (max-width: 640px) {
+  .trade-card {
+    border-radius: 18px;
+    padding: 14px;
+  }
+
+  .trade-chart-wrap--mobile-friendly {
+    min-width: 0;
+    }
+
+  .trade-card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .trade-card-symbol {
+    align-self: flex-start;
+    text-align: left;
+  }
+
+  .trade-risk-row {
+    position: relative;
+    z-index: 1;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    }
+
+    .trade-risk-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    }
+
+    .trade-risk-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 12px;
+    background: transparent;
+    color: rgba(226,232,240,0.72);
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+    white-space: nowrap;
+    }
+
+  .trade-stat-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .trade-performance {
+    text-align: left;
+  }
+
+  .trade-price-main {
+    font-size: clamp(1.8rem, 9vw, 2.3rem);
+  }
+
+  .trade-chart-wrap {
+    position: relative;
+    z-index: 1;
+    margin-top: 14px;
+    height: 170px;
+    width: 100%;
+    }
+
+  .trade-insight-card {
+    border-radius: 16px;
+    padding: 12px;
+  }
+
+  .trade-insight-text {
+    font-size: 0.84rem;
+  }
+
+  .trade-insight-result {
+    font-size: 0.72rem;
+  }
+}
+
+
+.trade-top-stats {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+}
+
+.trade-price-symbol-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trade-inline-symbol {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.trade-inline-symbol-code {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.trade-inline-symbol-range {
+  color: rgba(203,213,225,0.62);
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.trade-performance-below {
+  margin-top: 8px;
+}

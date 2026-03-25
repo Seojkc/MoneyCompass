@@ -456,7 +456,7 @@ export default function Home() {
             <Analytics userId={currentUser.id} />
         </section>
 
-        <section id="journey-section" className="section-block thirdpart-container p-4 glass-section-card">
+        <section id="journey-section" className="section-block thirdpart-container p-4 ">
           <h1 className="main-heading" style={{ color: "#f8fafc" }}>
             Journey Progress
           </h1>
@@ -468,6 +468,10 @@ export default function Home() {
       </div>
 
       <style jsx>{`
+
+        .thirdpart-container h3{
+          margin-bottom: 10px;
+        }
         .home-page-shell {
           min-height: 100vh;
           position: relative;
