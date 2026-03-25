@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { CalendarRange, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { getSummary } from "@/lib/bridge";
-
-type RangeKey = "3M" | "6M" | "1Y";
+import type { RangeKey } from "./Analytics";
 
 type SummaryState = {
   avgIncome: number;
@@ -88,14 +88,11 @@ export default function SummaryCards({
           monthsUsed: 0,
         });
       } finally {
-        if (!mounted) return;
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
-    if (userId) {
-      loadSummary();
-    }
+    if (userId) loadSummary();
 
     return () => {
       mounted = false;
@@ -115,64 +112,88 @@ export default function SummaryCards({
   const subtitle = useMemo(() => {
     if (loading) return "Calculating from your entries…";
     if (err) return "Couldn’t load right now.";
-    if (summary.monthsUsed <= 0) {
-      return "No data yet — add a few entries to unlock insights.";
-    }
-    if (summary.monthsUsed === 1) {
-      return "Based on 1 month of data.";
-    }
+    if (summary.monthsUsed <= 0) return "No data yet — add entries to unlock insights.";
+    if (summary.monthsUsed === 1) return "Based on 1 month of data.";
     return `Based on ${summary.monthsUsed} months of data.`;
   }, [loading, err, summary.monthsUsed]);
 
   return (
-    <div className="w-full max-w-md">
-      <div className="mb-4">
-        <label className="block text-sm mb-2 text-white/80">Range</label>
-        <select
-          value={range}
-          onChange={(e) => onRangeChange(e.target.value as RangeKey)}
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none"
-        >
-          <option value="3M">3 M</option>
-          <option value="6M">6 M</option>
-          <option value="1Y">1 year</option>
-        </select>
-      </div>
-
-      <div className="mb-3 text-xs text-white/60">{subtitle}</div>
-
-      {err && (
-        <div className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
-          {err}
-          <div className="mt-1 text-xs text-red-200/70">
-            Tip: check analytics summary API and user filtering.
+    <div className="summary-shell">
+      <div className="range-panel">
+        <div className="range-panel-top">
+          <div className="range-label-wrap">
+            <span className="range-icon">
+              <CalendarRange size={16} />
+            </span>
+            <span className="range-label">Range</span>
           </div>
         </div>
-      )}
 
-      <div className="flex flex-col gap-3">
-        <Card
-          title="Avg income / month"
+        <div className="range-segmented" role="tablist" aria-label="Analytics range">
+          {(["3M", "6M", "1Y"] as RangeKey[]).map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => onRangeChange(item)}
+              className={`range-chip ${range === item ? "active" : ""}`}
+            >
+              {item === "1Y" ? "1Y" : item}
+            </button>
+          ))}
+        </div>
+
+        <div className="summary-subtitle">{subtitle}</div>
+
+        {err && (
+          <div className="summary-error">
+            {err}
+            <div className="summary-error-tip">
+              Tip: check analytics summary API and user filtering.
+            </div>
+          </div>
+        )}
+      </div>
+
+
+      <div className="summary-cards-grid">
+        <MetricCard
+          title="Avg income"
           value={loading ? "Loading…" : money(summary.avgIncome)}
+          
+          tone="income"
         />
-        <Card
-          title="Avg expense / month"
+        <MetricCard
+          title="Avg expense"
           value={loading ? "Loading…" : money(summary.avgExpense)}
+          
+          tone="expense"
         />
-        <Card
+        <MetricCard
           title="Savings rate"
           value={loading ? "Loading…" : pct(summary.savingsRate)}
+          
+          tone="savings"
         />
       </div>
     </div>
   );
 }
 
-function Card({ title, value }: { title: string; value: string }) {
+function MetricCard({
+  title,
+  value,
+  tone,
+}: {
+  title: string;
+  value: string;
+  tone: "income" | "expense" | "savings";
+}) {
   return (
-    <div className="rounded-lg border border-white/10 bg-black/20 p-4">
-      <div className="text-sm text-white/60">{title}</div>
-      <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
+    <div className={`metric-card metric-card--${tone}`}>
+      <div className="metric-card-top">
+        <div className="metric-card-title">{title}</div>
+      </div>
+      <div className="metric-card-value">{value}</div>
     </div>
   );
 }

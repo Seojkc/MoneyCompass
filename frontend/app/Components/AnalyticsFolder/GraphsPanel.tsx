@@ -11,10 +11,10 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
 import { listEntries, UiEntry } from "@/lib/bridge";
-
-export type RangeKey = "3M" | "6M" | "1Y";
+import type { RangeKey } from "./Analytics";
 
 type MonthPoint = {
   key: string;
@@ -60,6 +60,17 @@ function buildWindow(anchorYear: number, anchorMonth: number, months: number): M
 function sumAmount(entries: UiEntry[]) {
   return entries.reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
 }
+
+const chartPalette = [
+  "#4699ff",
+  "#22c55e",
+  "#a78bfa",
+  "#f59e0b",
+  "#38bdf8",
+  "#fb7185",
+  "#34d399",
+  "#c084fc",
+];
 
 export default function GraphsPanel({
   userId,
@@ -158,104 +169,180 @@ export default function GraphsPanel({
         setCashflowData([]);
         setCategoryData([]);
       } finally {
-        if (!mounted) return;
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
-    if (userId) {
-      loadGraphs();
-    }
+    if (userId) loadGraphs();
 
     return () => {
       mounted = false;
     };
   }, [userId, windowMonths, limitPerMonth]);
 
+  const money = (n: number) =>
+    n.toLocaleString("en-CA", {
+      style: "currency",
+      currency: "CAD",
+      maximumFractionDigits: 0,
+    });
+
   return (
-    <div className="mt-6">
+    <div className="graphs-shell">
       {err && (
-        <div className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+        <div className="graphs-error">
           {err}
-          <div className="mt-1 text-xs text-red-200/70">
+          <div className="graphs-error-tip">
             Tip: confirm <code>/entries/by-user</code> works and user-specific data exists.
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <Chart title="Expense">
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart
-              data={expenseData}
-              margin={{ top: 5, right: 10, left: -35, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip />
+      <div className="graphs-grid">
+        <ChartCard title="Expense Trend" subtitle="Track spending across selected months">
+          <ResponsiveContainer width="100%" height={255}>
+            <LineChart data={expenseData} margin={{ top: 12, right: 12, left: -24, bottom: 6 }}>
+              <defs>
+                <linearGradient id="expenseStroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#60a5fa" />
+                  <stop offset="100%" stopColor="#a78bfa" />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#cbd5e1" }} axisLine={false} tickLine={false} />
+              <YAxis
+                tick={{ fontSize: 11, fill: "#cbd5e1" }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `$${Number(v) / 1000}k`}
+              />
+              <Tooltip content={<ModernTooltip money={money} />} cursor={{ stroke: "rgba(255,255,255,0.18)" }} />
               <Line
                 type="monotone"
                 dataKey="expense"
-                strokeWidth={1.5}
-                dot={false}
-                opacity={loading ? 0.4 : 1}
+                stroke="url(#expenseStroke)"
+                strokeWidth={3}
+                dot={{ r: 3, strokeWidth: 0, fill: "#93c5fd" }}
+                activeDot={{ r: 5, fill: "#fff" }}
+                opacity={loading ? 0.45 : 1}
               />
             </LineChart>
           </ResponsiveContainer>
-        </Chart>
+        </ChartCard>
 
-        <Chart title="Category">
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart
-              data={categoryData}
-              margin={{ top: 5, right: 10, left: -35, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-              <XAxis dataKey="category" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar dataKey="amount" fill="#0077ffce" opacity={loading ? 0.4 : 1} />
+        <ChartCard title="Top Categories" subtitle="Highest expense categories in this range">
+          <ResponsiveContainer width="100%" height={255}>
+            <BarChart data={categoryData} margin={{ top: 12, right: 12, left: -24, bottom: 6 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
+              <XAxis
+                dataKey="category"
+                interval={0}
+                angle={-28}
+                textAnchor="end"
+                height={74}
+                tick={{ fontSize: 11, fill: "#cbd5e1" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: "#cbd5e1" }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `$${Number(v) / 1000}k`}
+              />
+              <Tooltip content={<ModernTooltip money={money} />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+              <Bar dataKey="amount" radius={[8, 8, 0, 0]} opacity={loading ? 0.45 : 1}>
+                {categoryData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={chartPalette[index % chartPalette.length]} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </Chart>
+        </ChartCard>
 
-        <Chart title="Cashflow">
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart
-              data={cashflowData}
-              margin={{ top: 5, right: 10, left: -35, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip />
+        <ChartCard title="Cashflow" subtitle="Net income minus expenses by month">
+          <ResponsiveContainer width="100%" height={255}>
+            <LineChart data={cashflowData} margin={{ top: 12, right: 12, left: -24, bottom: 6 }}>
+              <defs>
+                <linearGradient id="cashStroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#22c55e" />
+                  <stop offset="100%" stopColor="#38bdf8" />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#cbd5e1" }} axisLine={false} tickLine={false} />
+              <YAxis
+                tick={{ fontSize: 11, fill: "#cbd5e1" }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `$${Number(v) / 1000}k`}
+              />
+              <Tooltip content={<ModernTooltip money={money} />} cursor={{ stroke: "rgba(255,255,255,0.18)" }} />
               <Line
                 type="monotone"
                 dataKey="net"
-                strokeWidth={1.5}
-                dot={false}
-                opacity={loading ? 0.4 : 1}
+                stroke="url(#cashStroke)"
+                strokeWidth={3}
+                dot={{ r: 3, strokeWidth: 0, fill: "#86efac" }}
+                activeDot={{ r: 5, fill: "#fff" }}
+                opacity={loading ? 0.45 : 1}
               />
             </LineChart>
           </ResponsiveContainer>
-        </Chart>
+        </ChartCard>
       </div>
     </div>
   );
 }
 
-function Chart({
+function ChartCard({
   title,
+  subtitle,
   children,
 }: {
   title: string;
+  subtitle: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="p-2">
-      <div className="text-s font-medium opacity-70 mb-1">{title}</div>
-      {children}
+    <div className="chart-card">
+      <div className="chart-card-head">
+        <div className="chart-card-title">{title}</div>
+      </div>
+      <div className="chart-card-body">{children}</div>
+    </div>
+  );
+}
+
+function ModernTooltip({
+  active,
+  payload,
+  label,
+  money,
+}: {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+  money: (n: number) => string;
+}) {
+  if (!active || !payload?.length) return null;
+
+  const item = payload[0];
+  const key = item?.name || item?.dataKey || "Value";
+  const value = Number(item?.value || 0);
+
+  return (
+    <div
+      style={{
+        background: "rgba(0, 0, 0, 0.51)",
+        borderRadius: 14,
+        padding: "5px 10px",
+      }}
+    >
+      <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: "#ffffffde", marginTop: 2 }}>
+        {money(value)}
+      </div>
     </div>
   );
 }

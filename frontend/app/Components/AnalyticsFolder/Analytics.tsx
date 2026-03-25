@@ -1,42 +1,39 @@
-import React from 'react';
-import '../../CSS/Analytics.css'; // Assuming you have some CSS for styling
-import SummaryCards from './SummaryCards';
-import { useState } from 'react';
-import GraphsPanel from './GraphsPanel';
-import RoadmapTimeline from './RoadmapTimeline';
+"use client";
+
+import React, { useState } from "react";
+import "../../CSS/Analytics.css";
+import SummaryCards from "./SummaryCards";
+import GraphsPanel from "./GraphsPanel";
 
 interface AnalyticsProps {
-   userId: string;
+  userId: string;
 }
 
-type RangeKey = "3M" | "6M" | "1Y";
+export type RangeKey = "3M" | "6M" | "1Y";
 
-export const Analytics: React.FC<AnalyticsProps> = ({userId}) => {
+export const Analytics: React.FC<AnalyticsProps> = ({ userId }) => {
+  const [range, setRange] = useState<RangeKey>("3M");
 
-
-    const [range, setRange] = useState<RangeKey>("3M");
-
-
-    return (
-        <div className="analytics-container">
-            <h1 className="main-heading">Analytics</h1>
-
-            <div className="secondpart-container">
-                <div className="quick-add-container">
-                    <SummaryCards  userId={userId} range={range} onRangeChange={setRange} />
-                </div>
-        
-                <div className="TransactionTable-container">
-                    <div className='d-flex'>
-                        <GraphsPanel userId={userId}  range={range} />
-                    </div>
-                    
-                   
-                </div>
-                
-            </div>
+  return (
+    <div className="analytics-container">
+      <div className="analytics-header-row">
+        <div>
+          <h1 className="main-heading">Analytics</h1>
+         
         </div>
-    );
+      </div>
+
+      <div className="analytics-layout">
+        <aside className="analytics-summary-col">
+          <SummaryCards userId={userId} range={range} onRangeChange={setRange} />
+        </aside>
+
+        <section className="analytics-graphs-col">
+          <GraphsPanel userId={userId} range={range} />
+        </section>
+      </div>
+    </div>
+  );
 };
 
 export default Analytics;

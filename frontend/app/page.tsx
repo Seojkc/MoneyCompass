@@ -453,9 +453,7 @@ export default function Home() {
         />
 
         <section id="analytics-section" className="section-block">
-          <div className="glass-section-card">
             <Analytics userId={currentUser.id} />
-          </div>
         </section>
 
         <section id="journey-section" className="section-block thirdpart-container p-4 glass-section-card">

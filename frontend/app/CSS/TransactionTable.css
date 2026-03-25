@@ -197,14 +197,14 @@
 
 .delete-btn {
   padding: 8px 12px;
-  border: 1px solid rgba(248, 113, 113, 0.22);
+  border: 1px solid rgba(255, 3, 3, 0.397);
   border-radius: 10px;
   background:
-    linear-gradient(180deg, rgba(239, 68, 68, 0.92), rgba(220, 38, 38, 0.92));
+    linear-gradient(180deg, rgba(240, 75, 75, 0.445), rgba(220, 38, 38, 0.37));
   color: #ffffff;
   cursor: pointer;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 500;
   box-shadow:
     0 8px 18px rgba(239, 68, 68, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
@@ -267,8 +267,8 @@
   }
 
   .table-scroll {
-    max-height: 300px;
-    min-height: 300px;
+    max-height: 550px;
+    min-height: 550px;
   }
 
   .transaction-table th,
@@ -278,53 +278,5 @@
 
   .name-cell {
     max-width: 170px;
-  }
-}
-
-/* mobile */
-@media (max-width: 640px) {
-  .table-container {
-    padding: 12px;
-    margin-bottom: 20px;
-    border-radius: 16px;
-  }
-
-  .table-header-row {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-
-  .table-title {
-    width: 100%;
-    font-size: 1rem;
-  }
-
-  .table-scroll {
-    max-height: 280px;
-    min-height: 280px;
-    border-radius: 14px;
-  }
-
-  .transaction-table {
-    min-width: 620px;
-  }
-
-  .transaction-table th,
-  .transaction-table td {
-    padding: 11px 10px;
-    font-size: 0.84rem;
-  }
-
-  .category-badge {
-    min-height: 24px;
-    font-size: 0.7rem;
-    padding: 0 8px;
-  }
-
-  .delete-btn {
-    padding: 7px 10px;
-    font-size: 0.72rem;
-    border-radius: 9px;
   }
 }
