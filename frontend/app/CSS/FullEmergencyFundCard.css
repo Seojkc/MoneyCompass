@@ -1,0 +1,855 @@
+.fullfund-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.fullfund-card__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top right, rgba(96,165,250,0.10), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(34,197,94,0.08), transparent 28%);
+}
+
+.fullfund-card__header,
+.fullfund-card__badge-wrap,
+.fullfund-progress,
+.fullfund-duration,
+.fullfund-expenses,
+.fullfund-card__body {
+  position: relative;
+  z-index: 1;
+}
+
+.fullfund-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.fullfund-card__title-wrap {
+  min-width: 0;
+}
+
+.fullfund-card__eyebrow {
+  color: rgba(191,219,254,0.72);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.fullfund-card__title {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.25rem, 2vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.fullfund-card__status {
+  margin-top: 6px;
+  color: rgba(203,213,225,0.62);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.fullfund-card__status--error {
+  color: #fca5a5;
+}
+
+.fullfund-card__why-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.88);
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.fullfund-card__why-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.14);
+  box-shadow: 0 10px 18px rgba(0,0,0,0.14);
+}
+
+.fullfund-card__why-arrow {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.fullfund-card__badge-wrap {
+  width: fit-content;
+  margin: 18px auto 0;
+}
+
+.fullfund-card__badge {
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid rgba(253,224,71,0.18);
+  background: linear-gradient(180deg, rgba(253,224,71,0.12), rgba(253,224,71,0.06));
+  color: #fef3c7;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.fullfund-card__badge span {
+  font-weight: 800;
+  color: #fff7d6;
+}
+
+.fullfund-card__badge-tip {
+  width: 0;
+  height: 0;
+  margin: 0 auto;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid rgba(253,224,71,0.16);
+}
+
+.fullfund-progress {
+  margin-top: 18px;
+}
+
+.fullfund-progress__bar {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+  overflow: hidden;
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,0.22),
+    0 8px 20px rgba(0,0,0,0.08);
+}
+
+.fullfund-progress__gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #ff4b4b 0%,
+    #ff4b4b 18%,
+    #ff7a3d 26%,
+    #ffd84a 40%,
+    #ffd84a 60%,
+    #bfe75f 72%,
+    #59e07a 82%,
+    #2fd06c 100%
+  );
+}
+
+.fullfund-progress__shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.18), transparent);
+  opacity: 0.3;
+}
+
+.fullfund-progress__dot {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.24);
+  background: rgba(10,15,25,0.50);
+  box-shadow:
+    0 0 0 4px rgba(255,255,255,0.04),
+    0 8px 20px rgba(0,0,0,0.18);
+  transition: left 0.3s ease;
+}
+
+.fullfund-progress__dot-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.92);
+  transform: translate(-50%, -50%);
+}
+
+.fullfund-progress__ticks {
+  position: relative;
+  margin-top: 10px;
+  min-height: 24px;
+}
+
+.fullfund-progress__tick {
+  position: absolute;
+  top: 0;
+  color: rgba(226,232,240,0.72);
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fullfund-progress__tick--start {
+  left: 0;
+}
+
+.fullfund-progress__target-text {
+  position: absolute;
+  right: 0;
+  top: 0;
+  color: rgba(167,243,208,0.74);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.fullfund-duration {
+  margin-top: 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  padding: 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.fullfund-duration__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fullfund-duration__title {
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.fullfund-duration__subtitle {
+  margin-top: 4px;
+  color: rgba(226,232,240,0.55);
+  font-size: 0.8rem;
+}
+
+.fullfund-duration__help-btn {
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.86);
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fullfund-duration__help-btn:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-1px);
+}
+
+.fullfund-duration__toggle-wrap {
+  margin-top: 14px;
+}
+
+.fullfund-toggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.20);
+  padding: 4px;
+  overflow: hidden;
+}
+
+.fullfund-toggle__pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: calc(50% - 4px);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(167,243,208,0.18);
+  transition: all 0.3s ease;
+}
+
+.fullfund-toggle__btn {
+  position: relative;
+  z-index: 1;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.60);
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.fullfund-toggle__btn--active {
+  color: #fff;
+}
+
+.fullfund-toggle__sub {
+  margin-top: 4px;
+  color: rgba(226,232,240,0.55);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.fullfund-expenses {
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    radial-gradient(circle at top, rgba(255,255,255,0.06), transparent 45%),
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+}
+
+.fullfund-expenses__head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 12px 14px;
+  color: rgba(226,232,240,0.60);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.fullfund-expenses__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.fullfund-expenses__body > * + * {
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.fullfund-expense-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+}
+
+.fullfund-expense-row__label {
+  color: rgba(255,255,255,0.82);
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+
+.fullfund-expenses__footer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  padding: 14px;
+}
+
+.fullfund-expenses__footer-title {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.fullfund-expenses__footer-subtitle {
+  margin-top: 4px;
+  color: rgba(226,232,240,0.55);
+  font-size: 0.75rem;
+}
+
+.fullfund-expenses__footer-right {
+  text-align: right;
+}
+
+.fullfund-expenses__footer-value {
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.fullfund-expenses__footer-note {
+  color: rgba(226,232,240,0.48);
+  font-size: 0.7rem;
+}
+
+.fullfund-card__body {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fullfund-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.fullfund-row__label {
+  color: rgba(226,232,240,0.76);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.fullfund-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
+  padding: 0 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.fullfund-input--small {
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 12px;
+}
+
+.fullfund-input--compact {
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 12px;
+}
+
+.fullfund-input--success {
+  border-color: rgba(167,243,208,0.16);
+  background: rgba(167,243,208,0.10);
+}
+
+.fullfund-input__currency {
+  color: rgba(255,255,255,0.48);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.fullfund-input__currency--success {
+  color: rgba(209,250,229,0.75);
+}
+
+.fullfund-input__field {
+  width: 92px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  text-align: right;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.fullfund-input__field--small {
+  width: 54px;
+  font-size: 0.92rem;
+}
+
+.fullfund-input__field--compact {
+  font-size: 0.9rem;
+}
+
+.fullfund-input__value {
+  width : 100%;
+  text-align: right;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.fullfund-input__value--success {
+  color: #d1fae5;
+}
+
+.fullfund-input input::-webkit-outer-spin-button,
+.fullfund-input input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.fullfund-input input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.fullfund-monthly {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fullfund-monthly__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,0.84);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.fullfund-monthly__label {
+  font-weight: 700;
+  color: #fff;
+}
+
+.fullfund-monthly__text,
+.fullfund-monthly__hint {
+  color: rgba(226,232,240,0.74);
+}
+
+.fullfund-monthly__arrow {
+  color: rgba(255,255,255,0.42);
+  font-weight: 700;
+}
+
+.fullfund-monthly__pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.fullfund-monthly__state {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.58);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.fullfund-monthly__state--done {
+  color: #86efac;
+  border-color: rgba(34,197,94,0.32);
+  background: rgba(34,197,94,0.10);
+}
+
+.fullfund-monthly__micro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(167,243,208,0.78);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.fullfund-monthly__micro-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(167,243,208,0.82);
+  flex: 0 0 auto;
+}
+
+.fullfund-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.fullfund-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(0,0,0,0.64);
+  cursor: pointer;
+}
+
+.fullfund-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 760px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(10,12,18,0.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.42);
+  padding: 18px;
+}
+
+.fullfund-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fullfund-modal__title {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.fullfund-modal__subtitle {
+  margin-top: 4px;
+  color: rgba(203,213,225,0.62);
+  font-size: 0.78rem;
+}
+
+.fullfund-modal__close,
+.fullfund-modal__action {
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.86);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.fullfund-modal__close {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullfund-modal__action {
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.fullfund-modal__close:hover,
+.fullfund-modal__action:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-1px);
+}
+
+.fullfund-modal__body {
+  margin-top: 16px;
+}
+
+.fullfund-modal__footer {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fullfund-why-content {
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 6px;
+  color: rgba(255,255,255,0.85);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  line-height: 1.65;
+  font-size: 0.94rem;
+}
+
+.fullfund-why-block h3,
+.fullfund-why-block h4 {
+  margin: 0 0 8px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.fullfund-why-block p {
+  margin: 0 0 8px;
+}
+
+.fullfund-why-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fullfund-why-callout {
+  border-radius: 16px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  font-weight: 600;
+}
+
+.fullfund-why-callout--amber {
+  color: #fde68a;
+  background: rgba(251,191,36,0.10);
+  border-color: rgba(251,191,36,0.18);
+}
+
+.fullfund-why-callout--green {
+  color: #86efac;
+  background: rgba(34,197,94,0.10);
+  border-color: rgba(34,197,94,0.18);
+}
+
+@media (max-width: 980px) {
+  .fullfund-card {
+    border-radius: 20px;
+    padding: 15px;
+  }
+
+  .fullfund-card__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fullfund-card__why-btn,
+  .fullfund-duration__help-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .fullfund-duration__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fullfund-expenses {
+    width: 100%;
+  }
+
+  .fullfund-progress__tick {
+    font-size: 0.68rem;
+  }
+
+  .fullfund-monthly__line {
+    gap: 8px;
+    font-size: 0.86rem;
+  }
+
+  .fullfund-modal__panel {
+    border-radius: 20px;
+    padding: 15px;
+  }
+
+  .fullfund-why-content {
+    max-height: 60vh;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .fullfund-row,
+  .fullfund-expense-row,
+  .fullfund-expenses__footer {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .fullfund-row {
+    gap: 10px;
+  }
+
+  .fullfund-input,
+  .fullfund-input--compact,
+  .fullfund-input--small {
+    justify-content: flex-end;
+  }
+
+
+  .fullfund-expenses__head {
+    font-size: 0.68rem;
+    padding: 10px 12px;
+  }
+
+  .fullfund-expense-row {
+    padding: 12px;
+  }
+
+  .fullfund-expenses__footer-right {
+    text-align: left;
+  }
+
+  .fullfund-toggle__btn {
+    padding: 12px 8px;
+    font-size: 0.86rem;
+  }
+
+  .fullfund-toggle__sub {
+    font-size: 0.68rem;
+  }
+
+  .fullfund-progress__ticks {
+    min-height: 38px;
+  }
+
+  .fullfund-progress__tick {
+    font-size: 0.64rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .fullfund-card__title {
+    font-size: 1.35rem;
+  }
+
+  .fullfund-card__badge {
+    font-size: 0.78rem;
+    padding: 9px 12px;
+  }
+
+  .fullfund-progress__tick {
+    transform: scale(0.95);
+    transform-origin: left top;
+  }
+
+  .fullfund-monthly__pill,
+  .fullfund-monthly__state {
+    min-height: 32px;
+    font-size: 0.74rem;
+  }
+
+  .fullfund-monthly__micro {
+    font-size: 0.8rem;
+  }
+}

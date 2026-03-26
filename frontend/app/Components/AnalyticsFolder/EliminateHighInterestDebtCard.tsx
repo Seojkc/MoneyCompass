@@ -430,15 +430,13 @@ export default function EliminateHighInterestDebtCard({
   }, [whyOpen, addOpen]);
 
   const defaultWhy = (
-    <div className="max-h-[65vh] space-y-6 overflow-y-auto pr-2 text-sm text-white/85 md:text-base">
-      <div className="space-y-3">
-        <h3 className="text-xl font-semibold text-white md:text-2xl">
-          💳 Why eliminating high-interest debt changes everything
-        </h3>
-        <p className="leading-relaxed text-white/80">
-          High-interest debt grows even when you do nothing. Interest is the “silent
-          bill” that keeps charging you for the past. Paying debt down is like buying
-          back your monthly freedom.
+    <div className="debt-why-content">
+      <div className="debt-why-block">
+        <h3>💳 Why eliminating high-interest debt changes everything</h3>
+        <p>
+          High-interest debt grows even when you do nothing. Interest is the
+          silent bill that keeps charging you for the past. Paying debt down is
+          like buying back your monthly freedom.
         </p>
       </div>
     </div>
@@ -446,14 +444,15 @@ export default function EliminateHighInterestDebtCard({
 
   return (
     <>
-      <section className="rounded-xl border border-white/10 bg-black/20 p-4 backdrop-blur md:p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="fs-1 text-3xl font-semibold text-white">
-              Eliminate High-Interest Debt
-            </h1>
+      <section className="starter-card debt-card">
+        <div className="starter-card__glow" />
 
-            <div className="mt-1 text-xs text-white/50">
+        <div className="starter-card__header">
+          <div className="starter-card__title-wrap">
+            <div className="starter-card__eyebrow">Step 2</div>
+            <h1 className="starter-card__title">Eliminate High-Interest Debt</h1>
+
+            <div className="starter-card__status">
               {loading
                 ? "Loading saved settings…"
                 : saveState === "saving"
@@ -461,78 +460,67 @@ export default function EliminateHighInterestDebtCard({
                 : saveState === "saved"
                 ? "Saved ✓"
                 : saveState === "error"
-                ? <span className="text-red-300">Couldn’t save (check API)</span>
+                ? <span className="starter-card__status--error">Couldn’t save (check API)</span>
                 : "Synced"}
             </div>
           </div>
 
           <button
             onClick={() => setWhyOpen(true)}
-            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-lg text-white/80 hover:text-white"
+            className="starter-card__why-btn"
           >
-            Why? <span className="ml-1">›</span>
+            Why? <span className="starter-card__why-arrow">›</span>
           </button>
         </div>
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-2">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="debt-strategy">
+          <div className="debt-strategy__grid">
             <button
               onClick={() => setStrategy("avalanche")}
               className={[
-                "rounded-lg border px-3 py-2 text-sm font-semibold transition",
-                strategy === "avalanche"
-                  ? "border-white/20 bg-white/10 text-white"
-                  : "border-white/10 bg-transparent text-white/60 hover:text-white",
+                "debt-strategy__btn",
+                strategy === "avalanche" ? "debt-strategy__btn--active" : "",
               ].join(" ")}
             >
-              Avalanche
-              <div className="text-[11px] font-normal text-white/50">
-                Start with highest interest
-              </div>
+              <span className="debt-strategy__title">Avalanche</span>
+              <span className="debt-strategy__sub">Start with highest interest</span>
             </button>
 
             <button
               onClick={() => setStrategy("snowball")}
               className={[
-                "rounded-lg border px-3 py-2 text-sm font-semibold transition",
-                strategy === "snowball"
-                  ? "border-white/20 bg-white/10 text-white"
-                  : "border-white/10 bg-transparent text-white/60 hover:text-white",
+                "debt-strategy__btn",
+                strategy === "snowball" ? "debt-strategy__btn--active" : "",
               ].join(" ")}
             >
-              Snowball
-              <div className="text-[11px] font-normal text-white/50">
-                Start with lowest balance
-              </div>
+              <span className="debt-strategy__title">Snowball</span>
+              <span className="debt-strategy__sub">Start with lowest balance</span>
             </button>
           </div>
         </div>
 
-        <div className="mt-5 overflow-hidden rounded-xl border border-white/10">
-          <div className="grid grid-cols-[1.4fr_.7fr_.8fr_.9fr_.3fr] gap-0 bg-white/5 text-xs text-white/60">
-            <div className="px-3 py-2">Payment name</div>
-            <div className="px-3 py-2">Interest</div>
-            <div className="px-3 py-2">Balance</div>
-            <div className="px-3 py-2">Total payment</div>
-            <div className="px-3 py-2 text-right"> </div>
+        <div className="debt-table">
+          <div className="debt-table__head debt-table__grid">
+            <div>Payment name</div>
+            <div>Interest</div>
+            <div>Balance</div>
+            <div>Total payment</div>
+            <div className="debt-table__delete-head"> </div>
           </div>
 
-          <div className="divide-y divide-white/10">
+          <div className="debt-table__body">
             {sortedDebts.map((d) => (
-              <div
-                key={d.id}
-                className="grid grid-cols-[1.4fr_.7fr_.8fr_.9fr_.3fr] gap-0 bg-black/10"
-              >
-                <div className="px-3 py-2">
+              <div key={d.id} className="debt-table__row debt-table__grid">
+                <div className="debt-table__cell">
                   <input
-                    className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/30 md:text-base"
+                    className="debt-table__name-input"
                     value={d.name}
                     onChange={(e) => updateDebt(d.id, { name: e.target.value })}
                     placeholder="Debt name"
                   />
                 </div>
 
-                <div className="px-3 py-2">
+                <div className="debt-table__cell">
                   <InlineNumber
                     suffix="%"
                     value={d.interestPct}
@@ -541,24 +529,24 @@ export default function EliminateHighInterestDebtCard({
                   />
                 </div>
 
-                <div className="px-3 py-2">
+                <div className="debt-table__cell">
                   <InlineMoney
                     value={d.balance}
                     onChange={(n) => updateDebt(d.id, { balance: n })}
                   />
                 </div>
 
-                <div className="px-3 py-2">
+                <div className="debt-table__cell">
                   <InlineMoney
                     value={d.totalPayment}
                     onChange={(n) => updateDebt(d.id, { totalPayment: n })}
                   />
                 </div>
 
-                <div className="flex justify-end px-3 py-2">
+                <div className="debt-table__cell debt-table__cell--delete">
                   <button
                     onClick={() => removeDebt(d.id)}
-                    className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/70 hover:text-white"
+                    className="debt-table__delete-btn"
                     title="Delete"
                     aria-label="Delete"
                   >
@@ -569,103 +557,89 @@ export default function EliminateHighInterestDebtCard({
             ))}
 
             {!sortedDebts.length && (
-              <div className="bg-black/10 p-4 text-sm text-white/60">
+              <div className="debt-table__empty">
                 No debts yet. Add one to begin.
               </div>
             )}
           </div>
 
-          <div className="border-t border-white/10 bg-black/10 p-3">
-            <button
-              onClick={openAdd}
-              className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white/80 hover:text-white"
-            >
+          <div className="debt-table__footer">
+            <button onClick={openAdd} className="debt-table__add-btn">
               + Add new debt
             </button>
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="debt-metrics">
           <MiniMetric label="Total balance" value={`$${moneyFmt(totals.totalBalance)}`} />
           <MiniMetric label="Total payment" value={`$${moneyFmt(totals.totalPayment)}`} />
-          <MiniMetric
-            label={<span className="text-red-400">Est. total balance next year</span>}
+          <MiniMetric 
+            label={<span className="debt-metrics__danger">Est. total balance next year</span>}
             value={`$${moneyFmt(estimatedBalanceNextYear)}`}
           />
         </div>
 
-        <div className="mt-6 border-t border-white/10 pt-4">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-white/85 md:text-base">
-            <span className="font-semibold">Extra contributing</span>
+        <div className="starter-card__body debt-summary">
+          <div className="debt-summary__line">
+            <span className="debt-summary__label">Extra contributing</span>
 
-            <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2 py-1">
-              <span className="text-sm text-white/50">$</span>
+            <span className="starter-input starter-input--small">
+              <span className="starter-input__currency">$</span>
               <input
-                className="w-14 bg-transparent text-right text-sm font-semibold text-white outline-none md:text-base"
+                className="starter-input__field starter-input__field--small"
                 type="number"
                 value={contributing}
                 onChange={(e) => setContributing(Number(e.target.value || 0))}
               />
             </span>
 
-            <span>per month</span>
-            <span className="text-white/60">→</span>
-            <span className="text-white/70">You&apos;ll be debt-free in</span>
+            <span className="debt-summary__text">per month</span>
+            <span className="debt-summary__arrow">→</span>
+            <span className="debt-summary__text">You&apos;ll be debt-free in</span>
 
-            <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-sm font-semibold text-white">
+            <span className="starter-monthly__pill">
               {monthsToDebtFree === null ? "—" : `${monthsToDebtFree} months`}
             </span>
 
-            <span className="text-white/60">({debtFreeBy ?? "—"})</span>
+            <span className="debt-summary__date">({debtFreeBy ?? "—"})</span>
 
             <span
               className={[
-                "ml-1 rounded-full border px-2 py-1 text-xs",
-                isDone
-                  ? "border-green-500/60 text-green-300"
-                  : "border-white/15 text-white/50",
+                "starter-monthly__state",
+                isDone ? "starter-monthly__state--done" : "",
               ].join(" ")}
             >
               {isDone ? "Completed ✓" : "In progress"}
             </span>
           </div>
 
-          <div className="mt-2 flex items-center gap-2 text-sm text-emerald-200/70">
-            <span className="h-2 w-2 rounded-full bg-emerald-200/70" />
-            {microLine}
-          </div>
+          
         </div>
       </section>
 
       {whyOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-        >
+        <div className="starter-modal" role="dialog" aria-modal="true">
           <button
             aria-label="Close overlay"
             onClick={() => setWhyOpen(false)}
-            className="absolute inset-0 bg-black/60"
+            className="starter-modal__backdrop"
           />
 
-          <div className="relative w-full max-w-2xl rounded-2xl border border-white/10 bg-zinc-950/90 p-4 shadow-2xl backdrop-blur md:p-6">
-            <div className="flex items-start justify-between gap-3">
+          <div className="starter-modal__panel">
+            <div className="starter-modal__header">
               <div>
-                <div className="text-lg font-semibold text-white md:text-xl">
-                  {whyTitle}
-                </div>
-                <div className="mt-1 text-xs text-white/60 md:text-sm">
+                <div className="starter-modal__title">{whyTitle}</div>
+                <div className="starter-modal__subtitle">
                   Quick explanation (tap outside to close).
                 </div>
               </div>
 
               <button
                 onClick={() => setWhyOpen(false)}
-                className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-2 text-white/80 hover:text-white"
+                className="starter-modal__close"
                 aria-label="Close"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-90">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M18 6L6 18M6 6L18 18"
                     stroke="currentColor"
@@ -676,49 +650,38 @@ export default function EliminateHighInterestDebtCard({
               </button>
             </div>
 
-            <div className="mt-4">{whyContent ?? defaultWhy}</div>
+            <div className="starter-modal__body">{whyContent ?? defaultWhy}</div>
 
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                onClick={() => setWhyOpen(false)}
-                className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/80 hover:text-white"
-              >
-                Close
-              </button>
+            <div className="starter-modal__footer">
+              
             </div>
           </div>
         </div>
       )}
 
       {addOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-        >
+        <div className="starter-modal" role="dialog" aria-modal="true">
           <button
             aria-label="Close dialog"
             onClick={() => setAddOpen(false)}
-            className="absolute inset-0 bg-black/60"
+            className="starter-modal__backdrop"
           />
 
-          <div className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-zinc-950/90 p-4 shadow-2xl backdrop-blur md:p-6">
-            <div className="flex items-start justify-between gap-3">
+          <div className="starter-modal__panel debt-add-modal">
+            <div className="starter-modal__header">
               <div>
-                <div className="text-lg font-semibold text-white md:text-xl">
-                  Add new debt
-                </div>
-                <div className="mt-1 text-xs text-white/60 md:text-sm">
+                <div className="starter-modal__title">Add new debt</div>
+                <div className="starter-modal__subtitle">
                   Enter details — you can edit anytime later.
                 </div>
               </div>
 
               <button
                 onClick={() => setAddOpen(false)}
-                className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-2 text-white/80 hover:text-white"
+                className="starter-modal__close"
                 aria-label="Close"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-90">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M18 6L6 18M6 6L18 18"
                     stroke="currentColor"
@@ -729,20 +692,20 @@ export default function EliminateHighInterestDebtCard({
               </button>
             </div>
 
-            <div className="mt-4 space-y-3">
+            <div className="debt-add-modal__form">
               <Field label="Payment name">
                 <input
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none"
+                  className="debt-add-modal__input"
                   value={newDebt.name}
                   onChange={(e) => setNewDebt((p) => ({ ...p, name: e.target.value }))}
                   placeholder="e.g., Credit card"
                 />
               </Field>
 
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div className="debt-add-modal__grid">
                 <Field label="Interest %">
                   <input
-                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none"
+                    className="debt-add-modal__input"
                     type="number"
                     min={0}
                     value={newDebt.interestPct}
@@ -757,7 +720,7 @@ export default function EliminateHighInterestDebtCard({
 
                 <Field label="Balance">
                   <input
-                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none"
+                    className="debt-add-modal__input"
                     type="number"
                     min={0}
                     value={newDebt.balance}
@@ -772,7 +735,7 @@ export default function EliminateHighInterestDebtCard({
 
                 <Field label="Total payment">
                   <input
-                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white outline-none"
+                    className="debt-add-modal__input"
                     type="number"
                     min={0}
                     value={newDebt.totalPayment}
@@ -787,16 +750,16 @@ export default function EliminateHighInterestDebtCard({
               </div>
             </div>
 
-            <div className="mt-5 flex justify-end gap-2">
+            <div className="starter-modal__footer debt-add-modal__actions">
               <button
                 onClick={() => setAddOpen(false)}
-                className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/80 hover:text-white"
+                className="starter-modal__action"
               >
                 Cancel
               </button>
               <button
                 onClick={addDebt}
-                className="rounded-lg border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
+                className="starter-modal__action debt-add-modal__action--primary"
               >
                 Add
               </button>
@@ -810,9 +773,9 @@ export default function EliminateHighInterestDebtCard({
 
 function MiniMetric({ label, value }: { label: React.ReactNode; value: string }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-      <div className="text-xs text-white/50">{label}</div>
-      <div className="mt-1 text-base font-semibold text-white">{value}</div>
+    <div className="debt-mini-metric">
+      <div className="debt-mini-metric__label">{label}</div>
+      <div className="debt-mini-metric__value">{value}</div>
     </div>
   );
 }
@@ -828,8 +791,8 @@ function estimateBalanceNextYearFromInterestOnly(debts: Debt[]) {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
-      <div className="mb-1 text-xs text-white/60">{label}</div>
+    <div className="debt-field">
+      <div className="debt-field__label">{label}</div>
       {children}
     </div>
   );
@@ -837,10 +800,10 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function InlineMoney({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
-    <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2 py-1">
-      <span className="text-sm text-white/50">$</span>
+    <span className="debt-inline-input">
+      <span className="debt-inline-input__prefix">$</span>
       <input
-        className="w-24 bg-transparent text-right text-sm font-semibold text-white outline-none md:text-base"
+        className="debt-inline-input__field debt-inline-input__field--money"
         type="number"
         min={0}
         value={value}
@@ -862,18 +825,18 @@ function InlineNumber({
   widthClass?: string;
 }) {
   return (
-    <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2 py-1">
+    <span className="debt-inline-input">
       <input
         className={[
           widthClass,
-          "bg-transparent text-right text-sm font-semibold text-white outline-none md:text-base",
+          "debt-inline-input__field",
         ].join(" ")}
         type="number"
         min={0}
         value={value}
         onChange={(e) => onChange(Number(e.target.value || 0))}
       />
-      {suffix ? <span className="ml-1 text-sm text-white/50">{suffix}</span> : null}
+      {suffix ? <span className="debt-inline-input__suffix">{suffix}</span> : null}
     </span>
   );
 }

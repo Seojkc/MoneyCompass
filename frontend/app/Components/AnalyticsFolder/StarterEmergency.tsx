@@ -358,12 +358,7 @@ export default function StarterEmergencyFundCard({
           </button>
         </div>
 
-        <div className="starter-card__badge-wrap">
-          <div className="starter-card__badge">
-            You&apos;re <span>{protectedPct}%</span> protected
-          </div>
-          <div className="starter-card__badge-tip" />
-        </div>
+        
 
         <div className="starter-progress">
           <div className="starter-progress__bar">

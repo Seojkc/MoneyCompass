@@ -6,6 +6,7 @@ import {
   ensureFullFundMetricsSeeded,
   UiUserStepMetric,
 } from "@/lib/bridge";
+import "../../CSS/FullEmergencyFundCard.css";
 
 type Props = {
   userId: string;
@@ -159,8 +160,8 @@ export default function FullEmergencyFundCard({
         setLoading(true);
 
         const metrics = await ensureFullFundMetricsSeeded({
-            userId,
-            stepKey,
+          userId,
+          stepKey,
         });
 
         if (!mounted) return;
@@ -361,138 +362,108 @@ export default function FullEmergencyFundCard({
   };
 
   const defaultWhy = (
-  <div className="space-y-5 text-sm md:text-base text-white/85 max-h-[65vh] overflow-y-auto pr-2">
-    
-    <div className="space-y-2">
-      <h3 className="text-xl md:text-2xl font-semibold text-white">
-        Why a full emergency fund matters
-      </h3>
-
-      <p className="leading-relaxed text-white/80">
-        Life rarely warns us before something changes. A job can pause, an unexpected
-        bill can appear, or circumstances can shift overnight. In those moments,
-        people without a safety net often face stress, panic, or high-interest debt.
-      </p>
-
-      <p className="leading-relaxed text-white/80">
-        A full emergency fund changes that experience completely. Instead of fear
-        and urgency, you gain time, clarity, and control over your next move.
-      </p>
-    </div>
-
-    <div className="space-y-2">
-      <div className="font-semibold text-white">
-        What this fund really protects
+    <div className="fullfund-why-content">
+      <div className="fullfund-why-block">
+        <h3>Why a full emergency fund matters</h3>
+        <p>
+          Life rarely warns us before something changes. A job can pause, an unexpected
+          bill can appear, or circumstances can shift overnight. In those moments,
+          people without a safety net often face stress, panic, or high-interest debt.
+        </p>
+        <p>
+          A full emergency fund changes that experience completely. Instead of fear
+          and urgency, you gain time, clarity, and control over your next move.
+        </p>
       </div>
 
-      <ul className="space-y-2">
-        <li>• Your home and essential living expenses</li>
-        <li>• Your ability to recover from unexpected situations</li>
-        <li>• Your freedom to make calm decisions instead of rushed ones</li>
-        <li>• Your long-term financial progress</li>
-      </ul>
-    </div>
-
-    <div className="space-y-2">
-      <div className="font-semibold text-white">
-        Think about this for a moment
+      <div className="fullfund-why-block">
+        <h4>What this fund really protects</h4>
+        <ul className="fullfund-why-list">
+          <li>• Your home and essential living expenses</li>
+          <li>• Your ability to recover from unexpected situations</li>
+          <li>• Your freedom to make calm decisions instead of rushed ones</li>
+          <li>• Your long-term financial progress</li>
+        </ul>
       </div>
 
-      <p className="leading-relaxed text-white/80">
-        If your income stopped tomorrow, how long could your essential life continue
-        without stress?
-      </p>
+      <div className="fullfund-why-block">
+        <h4>Think about this for a moment</h4>
+        <p>
+          If your income stopped tomorrow, how long could your essential life continue
+          without stress?
+        </p>
+        <p>A full emergency fund is the answer to that question.</p>
+      </div>
 
-      <p className="leading-relaxed text-white/80">
-        A full emergency fund is the answer to that question.
-      </p>
+      <div className="fullfund-why-callout fullfund-why-callout--green">
+        This fund isn’t just money in an account. It’s peace of mind, stability, and
+        the confidence that you’re prepared for whatever life brings.
+      </div>
     </div>
-
-    <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-emerald-200">
-      This fund isn’t just money in an account.  
-      It’s peace of mind, stability, and the confidence that you’re prepared for
-      whatever life brings.
-    </div>
-
-  </div>
-);
+  );
 
   const defaultHow = (
-  <div className="space-y-5 text-sm md:text-base text-white/85 max-h-[65vh] overflow-y-auto pr-2">
-
-    <div className="space-y-2">
-      <h3 className="text-xl md:text-2xl font-semibold text-white">
-        How to choose the right amount
-      </h3>
-
-      <p className="leading-relaxed text-white/80">
-        Most financial experts recommend saving between <span className="text-white font-semibold">3 to 6 months</span> of essential
-        living expenses. The right number depends on how stable and predictable your
-        life situation is.
-      </p>
-    </div>
-
-    <div className="space-y-2">
-      <div className="font-semibold text-white">
-        A 3-month fund may be enough if:
+    <div className="fullfund-why-content">
+      <div className="fullfund-why-block">
+        <h3>How to choose the right amount</h3>
+        <p>
+          Most financial experts recommend saving between <strong>3 to 6 months</strong> of
+          essential living expenses. The right number depends on how stable and predictable
+          your life situation is.
+        </p>
       </div>
 
-      <ul className="space-y-2">
-        <li>• Your income is stable and predictable</li>
-        <li>• You work in a field with strong job demand</li>
-        <li>• You have multiple income sources in your household</li>
-        <li>• Your monthly essential expenses are relatively low</li>
-      </ul>
-    </div>
-
-    <div className="space-y-2">
-      <div className="font-semibold text-white">
-        A 6-month fund may be safer if:
+      <div className="fullfund-why-block">
+        <h4>A 3-month fund may be enough if:</h4>
+        <ul className="fullfund-why-list">
+          <li>• Your income is stable and predictable</li>
+          <li>• You work in a field with strong job demand</li>
+          <li>• You have multiple income sources in your household</li>
+          <li>• Your monthly essential expenses are relatively low</li>
+        </ul>
       </div>
 
-      <ul className="space-y-2">
-        <li>• Your income is irregular or contract-based</li>
-        <li>• You are self-employed or freelancing</li>
-        <li>• You support dependents or family members</li>
-        <li>• Your job market may take longer to recover from setbacks</li>
-        <li>• Your monthly fixed expenses are high</li>
-      </ul>
-    </div>
-
-    <div className="space-y-2">
-      <div className="font-semibold text-white">
-        Remember
+      <div className="fullfund-why-block">
+        <h4>A 6-month fund may be safer if:</h4>
+        <ul className="fullfund-why-list">
+          <li>• Your income is irregular or contract-based</li>
+          <li>• You are self-employed or freelancing</li>
+          <li>• You support dependents or family members</li>
+          <li>• Your job market may take longer to recover from setbacks</li>
+          <li>• Your monthly fixed expenses are high</li>
+        </ul>
       </div>
 
-      <p className="leading-relaxed text-white/80">
-        This number isn’t about fear — it’s about confidence. The goal is to build
-        enough financial space so that unexpected events don’t force rushed decisions.
-      </p>
+      <div className="fullfund-why-block">
+        <h4>Remember</h4>
+        <p>
+          This number isn’t about fear — it’s about confidence. The goal is to build
+          enough financial space so that unexpected events don’t force rushed decisions.
+        </p>
+        <p>
+          Choose the level that helps you sleep peacefully at night, knowing your
+          essentials are protected.
+        </p>
+      </div>
 
-      <p className="leading-relaxed text-white/80">
-        Choose the level that helps you sleep peacefully at night, knowing your
-        essentials are protected.
-      </p>
+      <div className="fullfund-why-callout fullfund-why-callout--amber">
+        There is no perfect number. The best emergency fund is the one that gives you
+        confidence and keeps your life stable when things don’t go as planned.
+      </div>
     </div>
-
-    <div className="rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 text-amber-200">
-      There is no perfect number. The best emergency fund is the one that gives
-      you confidence and keeps your life stable when things don’t go as planned.
-    </div>
-
-  </div>
-);
+  );
 
   return (
     <>
-      <section className="rounded-xl border border-white/10 bg-black/20 backdrop-blur p-4 md:p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="font-semibold text-white fs-1 text-3xl">
-              Full Emergency Fund
-            </h1>
+      <section className="fullfund-card">
+        <div className="fullfund-card__glow" />
 
-            <div className="mt-1 text-xs text-white/50">
+        <div className="fullfund-card__header">
+          <div className="fullfund-card__title-wrap">
+            <div className="fullfund-card__eyebrow">Step 4</div>
+            <h1 className="fullfund-card__title">Full Emergency Fund</h1>
+
+            <div className="fullfund-card__status">
               {loading ? (
                 "Loading saved settings…"
               ) : saveState === "saving" ? (
@@ -500,7 +471,9 @@ export default function FullEmergencyFundCard({
               ) : saveState === "saved" ? (
                 "Saved ✓"
               ) : saveState === "error" ? (
-                <span className="text-red-300">Couldn’t save (check API)</span>
+                <span className="fullfund-card__status--error">
+                  Couldn’t save (check API)
+                </span>
               ) : (
                 "Synced"
               )}
@@ -509,60 +482,36 @@ export default function FullEmergencyFundCard({
 
           <button
             onClick={() => setWhyOpen(true)}
-            className="text-lg text-white/80 hover:text-white rounded-lg border border-white/10 bg-white/5 px-3 py-1.5"
+            className="fullfund-card__why-btn"
           >
-            Why? <span className="ml-1">›</span>
+            <span>Why?</span>
+            <span className="fullfund-card__why-arrow">›</span>
           </button>
         </div>
 
-        <div className="relative w-fit mx-auto mt-4">
-          <div className="rounded-lg border border-amber-200/20 bg-amber-200/10 px-3 py-2 text-xs md:text-sm text-amber-100">
-            You&apos;re <span className="font-semibold">{protectedPct}%</span> protected
-          </div>
-          <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 h-0 w-0 border-x-[10px] border-x-transparent border-t-[10px] border-t-amber-200/20" />
-        </div>
+       
 
-        <div className="mt-5">
-          <div className="relative h-5 rounded-full border border-white/10 overflow-hidden shadow-inner">
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(90deg," +
-                  "#ff4b4b 0%," +
-                  "#ff4b4b 18%," +
-                  "#ff7a3d 26%," +
-                  "#ffd84a 40%," +
-                  "#ffd84a 60%," +
-                  "#bfe75f 72%," +
-                  "#59e07a 82%," +
-                  "#2fd06c 100%)",
-              }}
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/15 to-transparent opacity-25" />
+        <div className="fullfund-progress">
+          <div className="fullfund-progress__bar">
+            <div className="fullfund-progress__gradient" />
+            <div className="fullfund-progress__shine" />
 
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border border-white/25 bg-black/30 shadow transition-[left] duration-300"
-              style={{ left: `calc(${progress * 100}% - 10px)` }}
+              className="fullfund-progress__dot"
+              style={{ left: `calc(${progress * 100}% - 11px)` }}
               title={`Saved $${money(currentSaved)}`}
             >
-              <div className="w-2.5 h-2.5 rounded-full bg-white/90 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-            </div>
-
-            <div className="absolute right-2 -top-9 flex items-center">
-              <div className="rounded-lg border border-emerald-200/20 bg-emerald-200/10 px-2.5 py-1 text-[11px] text-emerald-100">
-                Target
-              </div>
+              <div className="fullfund-progress__dot-core" />
             </div>
           </div>
 
-          <div className="relative mt-2 h-6">
-            <div className="absolute left-0 top-0 text-xs md:text-sm text-white/70">$0</div>
+          <div className="fullfund-progress__ticks">
+            <div className="fullfund-progress__tick fullfund-progress__tick--start">$0</div>
 
             {ticks.map((v) => (
               <div
                 key={v}
-                className="absolute top-0 text-xs md:text-sm text-white/70"
+                className="fullfund-progress__tick"
                 style={{
                   left: `calc(${(v / Math.max(1, target)) * 100}% - 18px)`,
                 }}
@@ -571,46 +520,39 @@ export default function FullEmergencyFundCard({
               </div>
             ))}
 
-            <div className="absolute right-0 top-0 text-xs md:text-sm text-emerald-200/70">
-              ${money(target)}
-            </div>
+            <div className="fullfund-progress__target-text">${money(target)}</div>
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-3">
-          <div className="flex items-center justify-between gap-3">
+        <div className="fullfund-duration">
+          <div className="fullfund-duration__header">
             <div>
-              <div className="text-sm md:text-base font-semibold text-white">
-                Emergency fund duration
-              </div>
-              <div className="text-xs md:text-sm text-white/55">
+              <div className="fullfund-duration__title">Emergency fund duration</div>
+              <div className="fullfund-duration__subtitle">
                 Select your protection level
               </div>
             </div>
 
             <button
               onClick={() => setHowOpen(true)}
-              className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white/80 hover:text-white"
+              className="fullfund-duration__help-btn"
             >
               How to choose?
             </button>
           </div>
 
-          <div className="mt-4">
-            <SwipeToggle
-              value={selectedMonths}
-              onChange={setSelectedMonths}
-            />
+          <div className="fullfund-duration__toggle-wrap">
+            <SwipeToggle value={selectedMonths} onChange={setSelectedMonths} />
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl border border-white/10 bg-white/5 overflow-hidden w-[60%] mx-auto flex flex-col bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_45%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]">
-          <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-white/10 px-3 py-2 text-[11px] md:text-xs font-semibold uppercase tracking-wide text-white/60">
+        <div className="fullfund-expenses">
+          <div className="fullfund-expenses__head">
             <div>Usually includes</div>
             <div>Amount</div>
           </div>
 
-          <div className="divide-y divide-white/10 flex-1">
+          <div className="fullfund-expenses__body">
             <CompactExpenseRow
               label="Rent / Mortgage"
               value={expenses.rent}
@@ -663,26 +605,26 @@ export default function FullEmergencyFundCard({
             />
           </div>
 
-          <div className="grid grid-cols-[1fr_auto] gap-3 border-t border-white/10 bg-white/[0.03] px-3 py-3">
+          <div className="fullfund-expenses__footer">
             <div>
-              <div className="text-sm font-semibold text-white">
-            Total essential expenses
+              <div className="fullfund-expenses__footer-title">
+                Total essential expenses
               </div>
-              <div className="text-[11px] md:text-xs text-white/55">
-            Monthly essentials used for target
+              <div className="fullfund-expenses__footer-subtitle">
+                Monthly essentials used for target
               </div>
             </div>
 
-            <div className="text-right">
-              <div className="text-base md:text-lg font-semibold text-white">
-            ${money(essentialMonthlyExpenses)}
+            <div className="fullfund-expenses__footer-right">
+              <div className="fullfund-expenses__footer-value">
+                ${money(essentialMonthlyExpenses)}
               </div>
-              <div className="text-[11px] text-white/50">per month</div>
+              <div className="fullfund-expenses__footer-note">per month</div>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 border-t border-white/10 pt-4 space-y-4">
+        <div className="fullfund-card__body">
           <ReadOnlyCalcRow
             label={`Target (${selectedMonths} months × essential expenses)`}
             value={target}
@@ -694,42 +636,41 @@ export default function FullEmergencyFundCard({
             onChange={setCurrentSaved}
           />
 
-          <div>
-            <div className="text-sm md:text-base text-white/85 flex flex-wrap items-center gap-2">
-              <span className="font-semibold">Saving</span>
+          <div className="fullfund-monthly">
+            <div className="fullfund-monthly__line">
+              <span className="fullfund-monthly__label">Saving</span>
 
-              <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2 py-1">
-                <span className="text-white/50 text-sm">$</span>
+              <span className="fullfund-input fullfund-input--small">
+                <span className="fullfund-input__currency">$</span>
                 <input
-                  className="w-16 bg-transparent outline-none text-right text-sm md:text-base font-semibold text-white"
+                  className="fullfund-input__field fullfund-input__field--small"
                   type="number"
                   value={savePerMonth}
                   onChange={(e) => setSavePerMonth(Number(e.target.value || 0))}
                 />
               </span>
 
-              <span>per month</span>
-              <span className="text-white/60">→</span>
-              <span className="text-white/70">You&apos;ll reach your goal in</span>
+              <span className="fullfund-monthly__text">per month</span>
+              <span className="fullfund-monthly__arrow">→</span>
+              <span className="fullfund-monthly__hint">
+                You&apos;ll reach your goal in
+              </span>
 
-              <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-sm font-semibold text-white">
+              <span className="fullfund-monthly__pill">
                 {monthsToGoal === null ? "—" : `${monthsToGoal} months`}
               </span>
 
               <span
-                className={[
-                  "ml-1 text-xs rounded-full border px-2 py-1",
-                  isDone
-                    ? "border-green-500/60 text-green-300"
-                    : "border-white/15 text-white/50",
-                ].join(" ")}
+                className={`fullfund-monthly__state ${
+                  isDone ? "fullfund-monthly__state--done" : ""
+                }`}
               >
                 {isDone ? "Completed ✓" : "In progress"}
               </span>
             </div>
 
-            <div className="mt-2 flex items-center gap-2 text-sm text-emerald-200/70">
-              <span className="w-2 h-2 rounded-full bg-emerald-200/70" />
+            <div className="fullfund-monthly__micro">
+              <span className="fullfund-monthly__micro-dot" />
               {microLine}
             </div>
           </div>
@@ -739,7 +680,7 @@ export default function FullEmergencyFundCard({
       {whyOpen && (
         <OverlayShell
           title={whyTitle}
-          subtitle="Quick explanation (tap outside to close)."
+          subtitle=""
           onClose={() => setWhyOpen(false)}
         >
           {whyContent ?? defaultWhy}
@@ -767,9 +708,9 @@ function SwipeToggle({
   onChange: (value: 3 | 6) => void;
 }) {
   return (
-    <div className="relative grid grid-cols-2 rounded-xl border border-white/10 bg-black/20 p-1 overflow-hidden">
+    <div className="fullfund-toggle">
       <div
-        className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-lg bg-white/10 border border-emerald-300/20 transition-all duration-300"
+        className="fullfund-toggle__pill"
         style={{
           left: value === 3 ? "4px" : "calc(50% + 0px)",
         }}
@@ -778,25 +719,23 @@ function SwipeToggle({
       <button
         type="button"
         onClick={() => onChange(3)}
-        className={[
-          "relative z-10 rounded-lg px-4 py-3 text-sm font-semibold transition",
-          value === 3 ? "text-white" : "text-white/60 hover:text-white/80",
-        ].join(" ")}
+        className={`fullfund-toggle__btn ${
+          value === 3 ? "fullfund-toggle__btn--active" : ""
+        }`}
       >
         <div>3 Months</div>
-        <div className="mt-0.5 text-[11px] font-normal text-white/55">Stable income</div>
+        <div className="fullfund-toggle__sub">Stable income</div>
       </button>
 
       <button
         type="button"
         onClick={() => onChange(6)}
-        className={[
-          "relative z-10 rounded-lg px-4 py-3 text-sm font-semibold transition",
-          value === 6 ? "text-white" : "text-white/60 hover:text-white/80",
-        ].join(" ")}
+        className={`fullfund-toggle__btn ${
+          value === 6 ? "fullfund-toggle__btn--active" : ""
+        }`}
       >
         <div>6 Months</div>
-        <div className="mt-0.5 text-[11px] font-normal text-white/55">Less stable income</div>
+        <div className="fullfund-toggle__sub">Less stable income</div>
       </button>
     </div>
   );
@@ -812,13 +751,13 @@ function CompactExpenseRow({
   onChange: (n: number) => void;
 }) {
   return (
-    <div className="grid grid-cols-[1fr_auto] gap-3 px-3 py-2.5 items-center">
-      <div className="text-sm text-white/80 leading-tight">{label}</div>
+    <div className="fullfund-expense-row">
+      <div className="fullfund-expense-row__label">{label}</div>
 
-      <div className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5">
-        <span className="text-white/45 text-xs">$</span>
+      <div className="fullfund-input fullfund-input--compact">
+        <span className="fullfund-input__currency">$</span>
         <input
-          className="w-20 bg-transparent outline-none text-right text-sm font-semibold text-white"
+          className="fullfund-input__field fullfund-input__field--compact"
           type="number"
           value={value}
           onChange={(e) => onChange(Number(e.target.value || 0))}
@@ -838,13 +777,13 @@ function EditableRow({
   onChange: (n: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="text-xs md:text-sm text-white/60">{label}</div>
+    <div className="fullfund-row">
+      <div className="fullfund-row__label">{label}</div>
 
-      <div className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-        <span className="text-white/50 text-sm">$</span>
+      <div className="fullfund-input">
+        <span className="fullfund-input__currency">$</span>
         <input
-          className="w-24 bg-transparent outline-none text-right text-sm md:text-base font-semibold text-white"
+          className="fullfund-input__field"
           type="number"
           value={value}
           onChange={(e) => onChange(Number(e.target.value || 0))}
@@ -862,12 +801,12 @@ function ReadOnlyCalcRow({
   value: number;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="text-xs md:text-sm text-white/60">{label}</div>
+    <div className="fullfund-row">
+      <div className="fullfund-row__label">{label}</div>
 
-      <div className="inline-flex items-center gap-2 rounded-lg border border-emerald-200/15 bg-emerald-200/10 px-3 py-2">
-        <span className="text-emerald-100/70 text-sm">$</span>
-        <span className="w-24 text-right text-sm md:text-base font-semibold text-emerald-100">
+      <div className="fullfund-input fullfund-input--success">
+        <span className="fullfund-input__currency fullfund-input__currency--success">$</span>
+        <span className="fullfund-input__value fullfund-input__value--success">
           {value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
         </span>
       </div>
@@ -887,25 +826,25 @@ function OverlayShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+    <div className="fullfund-modal" role="dialog" aria-modal="true">
       <button
         aria-label="Close overlay"
         onClick={onClose}
-        className="absolute inset-0 bg-black/60"
+        className="fullfund-modal__backdrop"
       />
 
-      <div className="relative w-full max-w-2xl rounded-2xl border border-white/10 bg-zinc-950/90 backdrop-blur p-4 md:p-6 shadow-2xl">
-        <div className="flex items-start justify-between gap-3">
+      <div className="fullfund-modal__panel">
+        <div className="fullfund-modal__header">
           <div>
-            <div className="text-white font-semibold text-lg md:text-xl">{title}</div>
+            <div className="fullfund-modal__title">{title}</div>
             {subtitle ? (
-              <div className="mt-1 text-white/60 text-xs md:text-sm">{subtitle}</div>
+              <div className="fullfund-modal__subtitle">{subtitle}</div>
             ) : null}
           </div>
 
           <button
             onClick={onClose}
-            className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-2 text-white/80 hover:text-white"
+            className="fullfund-modal__close"
             aria-label="Close"
           >
             <span className="sr-only">Close</span>
@@ -927,15 +866,10 @@ function OverlayShell({
           </button>
         </div>
 
-        <div className="mt-4">{children}</div>
+        <div className="fullfund-modal__body">{children}</div>
 
-        <div className="mt-5 flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/80 hover:text-white"
-          >
-            Close
-          </button>
+        <div className="fullfund-modal__footer">
+         
         </div>
       </div>
     </div>

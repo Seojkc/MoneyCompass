@@ -139,7 +139,7 @@
 
 .starter-progress__bar {
   position: relative;
-  height: 22px;
+  height: 10px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.08);
   overflow: hidden;
@@ -175,8 +175,8 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 22px;
-  height: 22px;
+  width: 10px;
+  height: 10px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.24);
   background: rgba(10,15,25,0.50);
@@ -190,8 +190,8 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 9px;
-  height: 9px;
+  width: 7px;
+  height: 7px;
   border-radius: 999px;
   background: rgba(255,255,255,0.92);
   transform: translate(-50%, -50%);
@@ -615,12 +615,12 @@
   }
 
   .starter-progress__bar {
-    height: 20px;
+    height: 10px;
   }
 
   .starter-progress__dot {
-    width: 20px;
-    height: 20px;
+    width: 10px;
+    height: 10px;
   }
 
   .starter-progress__tick {
@@ -648,3 +648,378 @@
   }
 }
 
+
+
+.debt-card {
+  margin-top: 0;
+}
+
+.debt-strategy {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  padding: 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.debt-strategy__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.debt-strategy__btn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255,255,255,0.72);
+}
+
+.debt-strategy__btn:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.14);
+  transform: translateY(-1px);
+}
+
+.debt-strategy__btn--active {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.18);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.14);
+}
+
+.debt-strategy__title {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: inherit;
+}
+
+.debt-strategy__sub {
+  font-size: 0.75rem;
+  color: rgba(226,232,240,0.6);
+  line-height: 1.4;
+}
+
+.debt-table {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(7,10,18,0.35);
+}
+
+.debt-table__grid {
+  display: grid;
+  grid-template-columns: 1.5fr 0.8fr 0.95fr 1fr 0.36fr;
+}
+
+.debt-table__head {
+  background: rgba(255,255,255,0.05);
+  color: rgba(226,232,240,0.6);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.debt-table__head > div {
+  padding: 12px 14px;
+}
+
+.debt-table__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.debt-table__row {
+  background: rgba(0,0,0,0.10);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.debt-table__cell {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+}
+
+.debt-table__cell--delete {
+  justify-content: flex-end;
+}
+
+.debt-table__name-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.debt-table__name-input::placeholder {
+  color: rgba(255,255,255,0.28);
+}
+
+.debt-table__delete-btn {
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.72);
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.debt-table__delete-btn:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.14);
+}
+
+.debt-table__empty {
+  padding: 18px 16px;
+  color: rgba(255,255,255,0.58);
+  font-size: 0.92rem;
+  background: rgba(0,0,0,0.08);
+}
+
+.debt-table__footer {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.12);
+  padding: 14px;
+}
+
+.debt-table__add-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.86);
+  padding: 0 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.debt-table__add-btn:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-1px);
+}
+
+.debt-metrics {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.debt-mini-metric {
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
+  padding: 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.debt-mini-metric__label {
+  color: rgba(226,232,240,0.56);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.debt-mini-metric__value {
+  margin-top: 6px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.debt-metrics__danger {
+  color: #fca5a5;
+}
+
+.debt-summary {
+  margin-top: 20px;
+}
+
+.debt-summary__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,0.84);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.debt-summary__label {
+  font-weight: 700;
+  color: #fff;
+}
+
+.debt-summary__text,
+.debt-summary__date {
+  color: rgba(226,232,240,0.72);
+}
+
+.debt-summary__arrow {
+  color: rgba(255,255,255,0.4);
+  font-weight: 700;
+}
+
+.debt-why-content {
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 6px;
+  color: rgba(255,255,255,0.85);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  line-height: 1.65;
+  font-size: 0.94rem;
+}
+
+.debt-why-block h3,
+.debt-why-block h4 {
+  margin: 0 0 8px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.debt-why-block p {
+  margin: 0;
+}
+
+.debt-add-modal {
+  max-width: 700px;
+}
+
+.debt-add-modal__form {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.debt-add-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.debt-add-modal__input {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
+  padding: 0 14px;
+  color: #fff;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.debt-add-modal__input::placeholder {
+  color: rgba(255,255,255,0.30);
+}
+
+.debt-add-modal__actions {
+  gap: 10px;
+}
+
+.debt-add-modal__action--primary {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+.debt-field__label {
+  margin-bottom: 6px;
+  color: rgba(226,232,240,0.6);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.debt-inline-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
+  padding: 0 10px;
+}
+
+.debt-inline-input__prefix,
+.debt-inline-input__suffix {
+  color: rgba(255,255,255,0.48);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.debt-inline-input__field {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  text-align: right;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.debt-inline-input__field--money {
+  width: 88px;
+}
+
+.debt-inline-input input::-webkit-outer-spin-button,
+.debt-inline-input input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.debt-inline-input input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+@media (max-width: 900px) {
+  .debt-table {
+    overflow-x: auto;
+  }
+
+  .debt-table__grid {
+    min-width: 720px;
+  }
+
+  .debt-add-modal__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .debt-summary__line {
+    gap: 8px;
+    font-size: 0.86rem;
+  }
+
+  .debt-table__head {
+    font-size: 0.7rem;
+  }
+
+  .debt-table__name-input {
+    font-size: 0.9rem;
+  }
+}
