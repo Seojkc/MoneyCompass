@@ -574,6 +574,14 @@
   margin-bottom: 0;
 }
 
+
+.insurance-card__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:none;
+}
+
 .insurance-why-callout--amber {
   color: #fde68a;
   background: rgba(251,191,36,0.10);
@@ -613,8 +621,18 @@
 
 @media (max-width: 900px) {
   .insurance-card {
-    border-radius: 20px;
-    padding: 15px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0px;
+    padding: 0px;
+    border-top: 2px solid #ffffff2f !important;
+   
+    padding-top: 20px;
+    background: transparent;
+    border: none;
+    box-shadow:none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter:none;
   }
 
   .insurance-card__header {
@@ -640,9 +658,19 @@
     font-size: 0.68rem;
   }
 
+
+
   .insurance-row {
-    padding: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border-radius:none;
+    border: none;
+    background:none;
+    padding:none;
+    transition:none
   }
+
 
   .insurance-row__top {
     flex-direction: column;

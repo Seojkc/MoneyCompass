@@ -229,11 +229,7 @@
 
 .fullfund-duration {
   margin-top: 20px;
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.04);
-  padding: 14px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  
 }
 
 .fullfund-duration__header {
@@ -734,9 +730,38 @@
 
 @media (max-width: 980px) {
   .fullfund-card {
-    border-radius: 20px;
-    padding: 15px;
+    border-top: 2px solid #ffffff2f !important;
+    border-top-left-radius:5px ;
+    border-top-right-radius: 5px;
+    padding-top: 20px !important;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0px;
+    padding: 0px;
+    background: none;
+    border:none;
+    box-shadow:none;
+    -webkit-backdrop-filter: none;
+
   }
+
+  
+  .fullfund-duration {
+    margin-top: 0px;
+    border-radius: 0px;
+    border: 0px;
+    background: 0px;
+    padding: 0px;
+    box-shadow: 0px;
+  }
+
+
+    .fullfund-card__glow {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:none;
+    }
 
   .fullfund-card__header {
     flex-direction: column;
@@ -852,4 +877,12 @@
   .fullfund-monthly__micro {
     font-size: 0.8rem;
   }
+
+  .fullfund-card__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:none;
+}
+
 }

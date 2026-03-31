@@ -586,8 +586,18 @@
 
 @media (max-width: 900px) {
   .starter-card {
-    border-radius: 20px;
-    padding: 15px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0px;
+    padding: 0px;
+    background: transparent;
+    border: 0px ;
+    box-shadow:none;
+    backdrop-filter:none;
+    border-top: 2px solid #ffffff2f;
+   
+    padding-top: 20px;
+    -webkit-backdrop-filter: none;
   }
 
   .starter-card__header {
@@ -659,10 +669,10 @@
   z-index: 1;
   margin-top: 18px;
   border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.04);
-  padding: 10px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  border: none;
+  background: none;
+  padding: none;
+  box-shadow: none;
 }
 
 .debt-strategy__grid {
@@ -793,6 +803,14 @@
   font-size: 0.92rem;
   background: rgba(0,0,0,0.08);
 }
+
+.starter-card__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:none;
+}
+
 
 .debt-table__footer {
   border-top: 1px solid rgba(255,255,255,0.08);

@@ -31,17 +31,7 @@
   opacity: 0.95;
 }
 
-.finance-card-income::before {
-  background: linear-gradient(90deg, #22c55ea8, #86efad98);
-}
 
-.finance-card-expense::before {
-  background: linear-gradient(90deg, #ef444494, #fca5a591);
-}
-
-.finance-card-net::before {
-  background: linear-gradient(90deg, #38bff88e, #a78bfa7c);
-}
 
 .finance-card-top {
   display: flex;
@@ -73,11 +63,11 @@
 }
 
 .finance-green {
-  color: #40cc73d8;
+  color: #7cffacd2;
 }
 
 .finance-red {
-  color: #e25f5fc4;
+  color: #ff6666d3;
 }
 
 @media (max-width: 1024px) {

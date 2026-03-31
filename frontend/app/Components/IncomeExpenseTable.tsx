@@ -114,7 +114,6 @@ export default function IncomeExpenseTable({
               <tr>
                 <td colSpan={5} className="empty-state-cell">
                   <div className="empty-state">
-                    <span className="empty-state-icon">◌</span>
                     <span>No entries yet</span>
                   </div>
                 </td>

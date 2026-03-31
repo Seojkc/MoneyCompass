@@ -46,13 +46,16 @@ export default function Home() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
 
-  const [navVisible, setNavVisible] = useState(true);
   const [navScrolled, setNavScrolled] = useState(false);
+  const [navOffset, setNavOffset] = useState(0);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
+  const navOffsetRef = useRef(0);
   const profileRef = useRef<HTMLDivElement | null>(null);
+
+  const NAV_HIDE_DISTANCE = 110;
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -68,19 +71,31 @@ export default function Home() {
   }, [router]);
 
   useEffect(() => {
+    lastScrollY.current = window.scrollY || 0;
+
     const updateNavbar = () => {
       const currentY = window.scrollY;
       const diff = currentY - lastScrollY.current;
 
       setNavScrolled(currentY > 16);
 
-      if (currentY <= 24) {
-        setNavVisible(true);
-      } else if (diff > 10) {
-        setNavVisible(false);
-        setProfileOpen(false);
-      } else if (diff < -10) {
-        setNavVisible(true);
+      if (currentY <= 0) {
+        navOffsetRef.current = 0;
+        setNavOffset(0);
+      } else {
+        let nextOffset = navOffsetRef.current + diff;
+
+        if (nextOffset < 0) nextOffset = 0;
+        if (nextOffset > NAV_HIDE_DISTANCE) nextOffset = NAV_HIDE_DISTANCE;
+
+        if (Math.abs(diff) > 0.25) {
+          navOffsetRef.current = nextOffset;
+          setNavOffset(nextOffset);
+        }
+
+        if (diff > 0.8) {
+          setProfileOpen(false);
+        }
       }
 
       lastScrollY.current = currentY;
@@ -117,19 +132,18 @@ export default function Home() {
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-
   useEffect(() => {
     if (!currentUser?.id) return;
 
     fetchEntriesForMonth(currentUser.id, selectedMonth);
   }, [currentUser?.id, selectedMonth]);
 
-   const fetchEntriesForMonth = async (userId: string, monthDate: Date) => {
+  const fetchEntriesForMonth = async (userId: string, monthDate: Date) => {
     setLoadingEntries(true);
 
     try {
       const year = monthDate.getFullYear();
-      const month = monthDate.getMonth() + 1; // JS is 0-based, API wants 1-12
+      const month = monthDate.getMonth() + 1;
 
       const apiEntries = await listEntriesByUser({
         userId,
@@ -309,7 +323,6 @@ export default function Home() {
   };
 
   const displayName =
-    
     currentUser?.email?.split("@")[0] ||
     "User";
 
@@ -353,9 +366,11 @@ export default function Home() {
       <div className="ambient ambient-3" />
 
       <div
-        className={`top-nav-wrap ${navVisible ? "visible" : "hidden"} ${
-          navScrolled ? "scrolled" : ""
-        }`}
+        className={`top-nav-wrap ${navScrolled ? "scrolled" : ""}`}
+        style={{
+          transform: `translateY(-${navOffset}px)`,
+          opacity: Math.max(0.72, 1 - navOffset / 220),
+        }}
       >
         <div className="top-nav">
           <div className="nav-brand">
@@ -419,7 +434,6 @@ export default function Home() {
             >
               <span className="profile-avatar">{userInitial}</span>
               <span className="profile-name">{displayName}</span>
-             
             </button>
 
             <div className={`profile-dropdown ${profileOpen ? "open" : ""}`}>
@@ -453,7 +467,7 @@ export default function Home() {
         />
 
         <section id="analytics-section" className="section-block">
-            <Analytics userId={currentUser.id} />
+          <Analytics userId={currentUser.id} />
         </section>
 
         <section id="journey-section" className="section-block thirdpart-container p-4 ">
@@ -468,10 +482,10 @@ export default function Home() {
       </div>
 
       <style jsx>{`
-
-        .thirdpart-container h3{
+        .thirdpart-container h3 {
           margin-bottom: 10px;
         }
+
         .home-page-shell {
           min-height: 100vh;
           position: relative;
@@ -525,20 +539,10 @@ export default function Home() {
           z-index: 1000;
           padding: 12px 20px 0;
           transition:
-            transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-            opacity 0.35s ease,
-            padding 0.35s ease;
+            transform 0.22s linear,
+            opacity 0.22s linear,
+            padding 0.3s ease;
           will-change: transform, opacity;
-        }
-
-        .top-nav-wrap.visible {
-          transform: translateY(0);
-          opacity: 1;
-        }
-
-        .top-nav-wrap.hidden {
-          transform: translateY(-110%);
-          opacity: 0.96;
         }
 
         .top-nav-wrap.scrolled {
@@ -579,7 +583,6 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          
           overflow: hidden;
           flex-shrink: 0;
         }
@@ -609,7 +612,7 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           gap: 10px;
-          padding: 6px;         
+          padding: 6px;
         }
 
         .nav-btn {
@@ -630,7 +633,6 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           line-height: 0;
-          
         }
 
         .nav-btn-label {
@@ -657,10 +659,8 @@ export default function Home() {
           align-items: center;
           gap: 10px;
           padding: 8px 12px 8px 8px;
-          
           color: #f8fafc;
           cursor: pointer;
-          
           transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
@@ -748,7 +748,6 @@ export default function Home() {
           min-width: 0;
         }
 
-        
         .profile-dropdown-email {
           color: #94a3b8;
           font-size: 12px;
@@ -789,8 +788,6 @@ export default function Home() {
           scroll-margin-top: 132px;
           margin-bottom: 30px;
         }
-
-        
 
         .section-hero-head {
           display: flex;
@@ -856,15 +853,16 @@ export default function Home() {
             border-radius: 22px;
             gap: 10px;
           }
-            .nav-btn-label {
-              display: none;
-            }
 
-            .nav-btn-icon {
-              display: inline-flex;
-              width: 18px;
-              height: 18px;
-            }
+          .nav-btn-label {
+            display: none;
+          }
+
+          .nav-btn-icon {
+            display: inline-flex;
+            width: 18px;
+            height: 18px;
+          }
 
           .brand-text {
             display: none;
@@ -904,7 +902,6 @@ export default function Home() {
 
           .profile-caret {
             font-size: 12px;
-
           }
 
           .page-content {
@@ -937,6 +934,7 @@ export default function Home() {
             padding: 9px 8px;
             border-radius: 12px;
           }
+
           .profile-dropdown {
             right: -4px;
             min-width: 220px;

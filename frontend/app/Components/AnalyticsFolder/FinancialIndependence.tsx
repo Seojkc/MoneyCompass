@@ -186,49 +186,83 @@ export default function RoadmapTimeline( { userId }: Props) {
     </div>
   );
 }
-
 function FinancialIndependenceCard({ completed = true }: { completed?: boolean }) {
   return (
-    <div className="relative overflow-hidden rounded-[34px] border border-yellow-200/15 bg-[radial-gradient(circle_at_top,_rgba(255,220,120,0.18),_rgba(18,12,20,0.9)_34%,_rgba(7,7,14,0.98)_72%)] shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+    <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.025))] shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_8%,rgba(255,211,92,0.28),transparent_20%)]" />
-        <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(rgba(255,218,120,0.22)_1px,transparent_1px)] [background-size:22px_22px]" />
-        <div className="absolute left-1/2 top-[72px] h-px w-[76%] -translate-x-1/2 bg-gradient-to-r from-transparent via-yellow-200/40 to-transparent" />
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-yellow-200/10 to-transparent blur-2xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,216,107,0.18),transparent_28%)]" />
+        <div className="absolute -left-16 top-10 h-40 w-40 rounded-full bg-yellow-300/10 blur-3xl" />
+        <div className="absolute -right-10 bottom-0 h-44 w-44 rounded-full bg-amber-400/10 blur-3xl" />
+        <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:20px_20px]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-yellow-200/50 to-transparent" />
       </div>
 
-      <div className="relative mx-auto max-w-4xl px-6 py-10 text-center md:px-10 md:py-14">
-        <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-b from-yellow-200 to-yellow-500 shadow-[0_0_45px_rgba(255,214,102,0.4)] ring-4 ring-yellow-100/10">
-          <Trophy className="h-12 w-12 text-amber-900" strokeWidth={2.2} />
+      <div className="relative mx-auto flex max-w-4xl flex-col items-center px-5 py-8 text-center sm:px-8 sm:py-10 md:px-10 md:py-14">
+        <div className="relative mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-b from-yellow-100 via-yellow-300 to-amber-500 shadow-[0_0_35px_rgba(255,215,90,0.35)] ring-1 ring-white/20 sm:h-24 sm:w-24">
+          <div className="absolute inset-[6px] rounded-full border border-white/25" />
+          <Trophy className="h-10 w-10 text-amber-950 sm:h-12 sm:w-12" strokeWidth={2.2} />
         </div>
 
-        <h2 className="text-3xl font-semibold tracking-tight text-white md:text-5xl">
+        <div className="inline-flex items-center rounded-full border border-yellow-200/20 bg-yellow-200/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-yellow-100 sm:px-4 sm:text-xs">
+          Final Milestone
+        </div>
+
+        <h2 className="mt-4 text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-5xl">
           Financial Independence
         </h2>
 
-        <p className="mt-3 text-lg text-white/70 md:text-2xl">
+        <p className="mt-2 text-sm text-white/60 sm:text-base md:text-xl">
           Work becomes optional
         </p>
 
-        <div className="mx-auto mt-8 h-px w-full max-w-2xl bg-white/10" />
+        <div className="mt-6 h-px w-full max-w-xl bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
-        <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-white/75 md:text-3xl md:leading-[1.45]">
-          Congratulations! Everything is in place for you
-          <br className="hidden md:block" /> to live your best life.
+        <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-white/75 sm:text-base md:text-2xl md:leading-[1.5]">
+          Congratulations. You have built a financial system strong enough to
+          support freedom, flexibility, and the life you truly want to live.
         </p>
 
-        <div className="mt-10 flex justify-center">
+        <div className="mt-8 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-left backdrop-blur-md">
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">
+              Meaning
+            </div>
+            <div className="mt-2 text-sm leading-6 text-white/80 sm:text-[15px]">
+              Your core financial steps are complete and your money is now working
+              for you instead of against you.
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-left backdrop-blur-md">
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">
+              Outcome
+            </div>
+            <div className="mt-2 text-sm leading-6 text-white/80 sm:text-[15px]">
+              More peace, more choice, and more confidence in your future.
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 flex justify-center">
           <div
             className={[
-              "inline-flex items-center gap-3 rounded-full border px-6 py-3 text-xl font-semibold shadow-lg",
+              "inline-flex items-center gap-3 rounded-full border px-4 py-3 text-sm font-semibold shadow-[0_10px_30px_rgba(0,0,0,0.22)] sm:px-6 sm:text-base",
               completed
-                ? "border-yellow-300/40 bg-yellow-300/10 text-white"
+                ? "border-emerald-300/30 bg-emerald-300/12 text-white"
                 : "border-white/15 bg-white/5 text-white/70",
             ].join(" ")}
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-lime-300 text-lime-900 shadow-[0_0_25px_rgba(163,230,53,0.45)]">
-              <CheckCircle2 className="h-6 w-6" strokeWidth={2.8} />
+            <span
+              className={[
+                "flex h-9 w-9 items-center justify-center rounded-full sm:h-10 sm:w-10",
+                completed
+                  ? "bg-lime-300 text-lime-900 shadow-[0_0_22px_rgba(163,230,53,0.35)]"
+                  : "bg-white/10 text-white/70",
+              ].join(" ")}
+            >
+              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2.8} />
             </span>
+
             {completed ? "Completed" : "Locked"}
           </div>
         </div>

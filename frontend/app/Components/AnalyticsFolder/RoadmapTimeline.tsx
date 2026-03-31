@@ -159,8 +159,8 @@ export default function RoadmapTimeline({ userId }: Props) {
       <div className="roadmap-list">
         {visibleSteps.map((s, idx) => {
           const activeNow = active === s.key;
-          const done = isCompleted(s.key);
           const isFi = s.key === "fi";
+          const done = isFi ? true : isCompleted(s.key);
 
           return (
             <button

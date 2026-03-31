@@ -40,7 +40,7 @@
 
 .dashboard-firstpart-container {
   display: grid;
-  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  grid-template-columns: minmax(320px, 430px) minmax(0, 1fr);
   gap: 20px;
   align-items: stretch;
 }
