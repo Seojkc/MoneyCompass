@@ -95,6 +95,8 @@ app.add_middleware(
         "http://localhost:3000",
         "http://192.168.50.48:3000",
         "http://127.0.0.1:3000",
+        "https://money-compass-bgx7ic46s-seojkcs-projects.vercel.app/",
+        "https://money-compass-navy.vercel.app/"
     ],
     allow_credentials=True,
     allow_methods=["*"],
