@@ -1028,14 +1028,7 @@ export default function InvestCard({
             </div>
           </div>
 
-          <div className="invest-formula">
-            Projection formula:
-            <span>
-              {" "}
-              Estimated value = current invested × (1 + r/12)^(12t) + monthly
-              investment × [((1 + r/12)^(12t) - 1) / (r/12)]
-            </span>
-          </div>
+          
         </div>
       </section>
 
