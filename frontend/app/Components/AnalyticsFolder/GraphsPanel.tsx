@@ -181,11 +181,36 @@ export default function GraphsPanel({
   }, [userId, windowMonths, limitPerMonth]);
 
   const money = (n: number) =>
-    n.toLocaleString("en-CA", {
-      style: "currency",
-      currency: "CAD",
-      maximumFractionDigits: 0,
-    });
+  n.toLocaleString("en-CA", {
+    style: "currency",
+    currency: "CAD",
+    maximumFractionDigits: 0,
+  });
+
+  const formatAxisMoney = (value: number) => {
+  const abs = Math.abs(value);
+
+  if (abs >= 1000) {
+    const short = value / 1000;
+    return `${short < 0 ? "-" : ""}$${Math.abs(short) >= 10 ? Math.round(Math.abs(short)) : Math.abs(short).toFixed(1)}k`;
+  }
+
+  if (abs >= 100) {
+    return `${value < 0 ? "-" : ""}$${Math.round(abs)}`;
+  }
+
+  if (abs >= 10) {
+    return `${value < 0 ? "-" : ""}$${Math.round(abs)}`;
+  }
+
+  if (abs >= 1) {
+    return `${value < 0 ? "-" : ""}$${abs.toFixed(0)}`;
+  }
+
+  if (abs === 0) return "$0";
+
+  return `${value < 0 ? "-" : ""}$${abs.toFixed(2)}`;
+};
 
   return (
     <div className="graphs-shell">
@@ -201,7 +226,7 @@ export default function GraphsPanel({
       <div className="graphs-grid">
         <ChartCard title="Expense Trend" subtitle="Track spending across selected months">
           <ResponsiveContainer width="100%" height={255}>
-            <LineChart data={expenseData} margin={{ top: 12, right: 12, left: -24, bottom: 6 }}>
+            <LineChart data={expenseData} margin={{ top: 12, right: 12, left: 5, bottom: 6 }}>
               <defs>
                 <linearGradient id="expenseStroke" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#60a5fa" />
@@ -211,10 +236,11 @@ export default function GraphsPanel({
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#cbd5e1" }} axisLine={false} tickLine={false} />
               <YAxis
+                width={52}
                 tick={{ fontSize: 11, fill: "#cbd5e1" }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v) => `$${Number(v) / 1000}k`}
+                tickFormatter={formatAxisMoney}
               />
               <Tooltip content={<ModernTooltip money={money} />} cursor={{ stroke: "rgba(255,255,255,0.18)" }} />
               <Line
@@ -245,10 +271,11 @@ export default function GraphsPanel({
                 tickLine={false}
               />
               <YAxis
+                width={52}
                 tick={{ fontSize: 11, fill: "#cbd5e1" }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v) => `$${Number(v) / 1000}k`}
+                tickFormatter={formatAxisMoney}
               />
               <Tooltip content={<ModernTooltip money={money} />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
               <Bar dataKey="amount" radius={[8, 8, 0, 0]} opacity={loading ? 0.45 : 1}>
@@ -272,10 +299,12 @@ export default function GraphsPanel({
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#cbd5e1" }} axisLine={false} tickLine={false} />
               <YAxis
+                width={56}
                 tick={{ fontSize: 11, fill: "#cbd5e1" }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v) => `$${Number(v) / 1000}k`}
+                tickFormatter={formatAxisMoney}
+                domain={["auto", "auto"]}
               />
               <Tooltip content={<ModernTooltip money={money} />} cursor={{ stroke: "rgba(255,255,255,0.18)" }} />
               <Line
