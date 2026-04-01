@@ -563,7 +563,6 @@ export default function CsvImporter({ onData }: Props) {
             onChange={handleFileChange}
             hidden
           />
-          <span className="csv-import-btn-icon">⇪</span>
           <span>Import File</span>
         </label>
       </div>
