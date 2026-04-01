@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MoneyCompass",
   description: "Change your financial perspective with MoneyCompass",
+  icons: {
+    icon: "../asset/logo.png",
+    shortcut: "../asset/logo.png",
+    apple: "../asset/logo.png",
+  },
 };
 
 export default function RootLayout({
