@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "/"
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,10 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MoneyCompass",
   description: "Change your financial perspective with MoneyCompass",
-  icons: {
-    icon: "/logo.png",
-    
-  },
+  
 };
 
 export default function RootLayout({
