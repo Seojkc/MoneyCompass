@@ -9,7 +9,7 @@ type AuthResponse = {
 };
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://192.168.50.48:8000";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const STORAGE_KEY = "moneycompass_user";
 
