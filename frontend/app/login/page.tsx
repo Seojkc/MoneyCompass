@@ -32,6 +32,46 @@ export default function LoginPage() {
     router.push("/");
   };
 
+
+  type ApiErrorDetail =
+  | string
+  | Array<{
+      loc?: Array<string | number>;
+      msg?: string;
+      type?: string;
+    }>
+  | undefined;
+
+function formatApiError(detail: ApiErrorDetail, fallback: string) {
+  if (!detail) return fallback;
+
+  if (typeof detail === "string") return detail;
+
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => {
+        if (!item) return null;
+
+        const field =
+          Array.isArray(item.loc) && item.loc.length > 0
+            ? String(item.loc[item.loc.length - 1])
+            : "";
+
+        const msg = item.msg || "Invalid value";
+
+        return field ? `${field}: ${msg}` : msg;
+      })
+      .filter(Boolean);
+
+    if (messages.length > 0) {
+      return messages.join(", ");
+    }
+  }
+
+  return fallback;
+}
+
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -105,7 +145,8 @@ export default function LoginPage() {
       const signupData = await signupRes.json().catch(() => ({}));
 
       if (!signupRes.ok) {
-        throw new Error(signupData?.detail || "Signup failed");
+        const message = formatApiError(signupData?.detail, "Signup failed");
+        throw new Error(message);
       }
 
       saveAndGo(signupData as AuthResponse);
