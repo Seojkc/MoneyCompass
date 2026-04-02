@@ -20,6 +20,18 @@ import {
 } from "@/lib/bridge";
 import Analytics from "./Components/AnalyticsFolder/Analytics";
 
+
+
+import {
+  enqueueQuickEntry,
+  flushPendingQuickEntries,
+  listPendingQuickEntries,
+  deletePendingQuickEntry,
+  registerQuickEntryServiceWorker,
+  registerQuickEntrySync,
+} from "@/lib/quickEntryQueue";
+
+
 type Transaction = {
   type: "income" | "expense";
   category: string;
@@ -33,6 +45,7 @@ type Entry = {
   category: string;
   amount: number;
   date: Date;
+  pendingSync?: boolean;
 };
 
 export default function Home() {
@@ -40,7 +53,7 @@ export default function Home() {
 
   const [authChecked, setAuthChecked] = useState(false);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
-
+  const [pendingEntries, setPendingEntries] = useState<Entry[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -56,6 +69,28 @@ export default function Home() {
   const profileRef = useRef<HTMLDivElement | null>(null);
 
   const NAV_HIDE_DISTANCE = 110;
+
+  useEffect(() => {
+    registerQuickEntryServiceWorker();
+
+    const onOnline = () => {
+      flushQuickEntriesAndRefresh();
+      registerQuickEntrySync();
+    };
+
+    window.addEventListener("online", onOnline);
+
+    const interval = window.setInterval(() => {
+      flushQuickEntriesAndRefresh();
+    }, 20000);
+
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.clearInterval(interval);
+    };
+  }, [currentUser?.id, selectedMonth]);
+
+
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -136,6 +171,7 @@ export default function Home() {
     if (!currentUser?.id) return;
 
     fetchEntriesForMonth(currentUser.id, selectedMonth);
+    loadPendingEntriesForMonth(currentUser.id, selectedMonth);
   }, [currentUser?.id, selectedMonth]);
 
   const fetchEntriesForMonth = async (userId: string, monthDate: Date) => {
@@ -170,57 +206,76 @@ export default function Home() {
   };
 
   const addQuickEntry = async (
-    type: "income" | "expense",
-    category: string,
-    amount: number
-  ) => {
-    if (!currentUser?.id) {
-      router.replace("/login");
+      type: "income" | "expense",
+      category: string,
+      amount: number
+    ) => {
+      if (!currentUser?.id) {
+        router.replace("/login");
+        return;
+      }
+
+      setTransactions((prev) => [...prev, { type, category, amount }]);
+
+      const today = new Date();
+      const isSameSelectedMonthAsToday =
+        selectedMonth.getFullYear() === today.getFullYear() &&
+        selectedMonth.getMonth() === today.getMonth();
+
+      const quickDate = isSameSelectedMonthAsToday
+        ? new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        : new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
+
+      const tempId = `pending-${makeId()}`;
+
+      const optimisticEntry: Entry = {
+        id: tempId,
+        type,
+        name: "QuickEntry",
+        category,
+        amount: Math.abs(amount),
+        date: quickDate,
+        pendingSync: true,
+      };
+
+      await enqueueQuickEntry({
+        localId: tempId,
+        userId: currentUser.id,
+        date: dateToYmd(quickDate),
+        type,
+        name: "QuickEntry",
+        category,
+        amount: Math.abs(amount),
+        createdAt: Date.now(),
+        status: "pending",
+        retryCount: 0,
+        apiBase: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+      } as any);
+
+      setPendingEntries((prev) => [optimisticEntry, ...prev]);
+
+      try {
+        const synced = await flushPendingQuickEntries({ onlyLocalIds: [tempId] });
+
+        if (synced.length > 0) {
+          setPendingEntries((prev) => prev.filter((e) => e.id !== tempId));
+          await fetchEntriesForMonth(currentUser.id, selectedMonth);
+        } else {
+          await registerQuickEntrySync();
+        }
+      } catch (err) {
+        console.error("Quick entry queued for retry:", err);
+        await registerQuickEntrySync();
+      }
+    };
+
+  const deleteEntry = async (id: string) => {
+    if (id.startsWith("pending-")) {
+      await deletePendingQuickEntry(id);
+      setPendingEntries((prev) => prev.filter((e) => e.id !== id));
       return;
     }
 
-    setTransactions((prev) => [...prev, { type, category, amount }]);
-
-    const today = new Date();
-    const isSameSelectedMonthAsToday =
-      selectedMonth.getFullYear() === today.getFullYear() &&
-      selectedMonth.getMonth() === today.getMonth();
-
-    const quickDate = isSameSelectedMonthAsToday
-      ? new Date(today.getFullYear(), today.getMonth(), today.getDate())
-      : new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
-
-    const tempId = makeId();
-
-    const optimisticEntry: Entry = {
-      id: tempId,
-      type,
-      name: "QuickEntry",
-      category,
-      amount: Math.abs(amount),
-      date: quickDate,
-    };
-
-    setEntries((prev) => [optimisticEntry, ...prev]);
-
-    try {
-      const created = await createEntryFromUi({
-        type: optimisticEntry.type,
-        name: optimisticEntry.name,
-        category: optimisticEntry.category,
-        amount: optimisticEntry.amount,
-        date: optimisticEntry.date,
-      });
-
-      setEntries((prev) => prev.map((e) => (e.id === tempId ? created : e)));
-      await fetchEntriesForMonth(currentUser.id, selectedMonth);
-    } catch (err) {
-      console.error("Failed to create entry:", err);
-      setEntries((prev) => prev.filter((e) => e.id !== tempId));
-    }
-  };
-
-  const deleteEntry = async (id: string) => {
     const snapshot = entries;
     setEntries((prev) => prev.filter((e) => e.id !== id));
 
@@ -322,6 +377,51 @@ export default function Home() {
     });
   };
 
+  function dateToYmd(d: Date): string {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const loadPendingEntriesForMonth = async (userId: string, monthDate: Date) => {
+    const all = await listPendingQuickEntries(userId);
+
+    const filtered = all
+      .filter((item) => {
+        const d = new Date(`${item.date}T00:00:00`);
+        return (
+          d.getFullYear() === monthDate.getFullYear() &&
+          d.getMonth() === monthDate.getMonth()
+        );
+      })
+      .map((item) => ({
+        id: item.localId,
+        type: item.type,
+        name: item.name,
+        category: item.category,
+        amount: item.amount,
+        date: new Date(`${item.date}T00:00:00`),
+        pendingSync: true,
+      }));
+
+    setPendingEntries(filtered);
+  };
+
+  const flushQuickEntriesAndRefresh = async () => {
+    if (!currentUser?.id) return;
+
+    const synced = await flushPendingQuickEntries();
+
+    if (synced.length > 0) {
+      const syncedIds = new Set(synced.map((x) => x.localId));
+      setPendingEntries((prev) => prev.filter((e) => !syncedIds.has(e.id)));
+      await fetchEntriesForMonth(currentUser.id, selectedMonth);
+    }
+
+    await loadPendingEntriesForMonth(currentUser.id, selectedMonth);
+  };
+
   const displayName =
     currentUser?.email?.split("@")[0] ||
     "User";
@@ -346,14 +446,18 @@ export default function Home() {
     [transactions]
   );
 
+  const allEntries = useMemo(() => {
+    return [...pendingEntries, ...entries];
+  }, [pendingEntries, entries]);
+
   const entriesThisMonth = useMemo(() => {
-    return entries.filter((e) => {
+    return allEntries.filter((e) => {
       return (
         e.date.getMonth() === selectedMonth.getMonth() &&
         e.date.getFullYear() === selectedMonth.getFullYear()
       );
     });
-  }, [entries, selectedMonth]);
+  }, [allEntries, selectedMonth]);
 
   if (!authChecked || !currentUser) {
     return null;
@@ -456,7 +560,7 @@ export default function Home() {
         <DashboardSection
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
-          entries={entries}
+          entries={allEntries}
           entriesThisMonth={entriesThisMonth}
           loadingEntries={loadingEntries}
           lastIncomeCategory={lastIncomeCategory}
