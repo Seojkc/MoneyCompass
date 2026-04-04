@@ -24,6 +24,22 @@ type ApiEntry = {
   amount: number;
 };
 
+
+let flushPromise: Promise<
+  Array<{
+    localId: string;
+    created: {
+      id: string;
+      type: "income" | "expense";
+      name: string;
+      category: string;
+      amount: number;
+      date: Date;
+    };
+  }>
+> | null = null;
+
+
 const DB_NAME = "moneycompass-offline";
 const STORE = "quick-entry-queue";
 const API_BASE =
@@ -78,68 +94,87 @@ export async function updatePendingQuickEntry(entry: PendingQuickEntry) {
 export async function flushPendingQuickEntries(opts?: {
   onlyLocalIds?: string[];
 }) {
-  const db = await getDb();
-  let queued = await db.getAll(STORE);
-
-  if (opts?.onlyLocalIds?.length) {
-    const wanted = new Set(opts.onlyLocalIds);
-    queued = queued.filter((q) => wanted.has(q.localId));
+  if (flushPromise) {
+    return flushPromise;
   }
 
-  const synced: Array<{
-    localId: string;
-    created: {
-      id: string;
-      type: "income" | "expense";
-      name: string;
-      category: string;
-      amount: number;
-      date: Date;
-    };
-  }> = [];
+  flushPromise = (async () => {
+    const db = await getDb();
+    let queued = await db.getAll(STORE);
 
-  for (const item of queued) {
-    try {
-      await db.put(STORE, { ...item, status: "sending" as const });
-
-      const res = await fetch(`${API_BASE}/entries`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: item.userId,
-          date: item.date,
-          type: item.type,
-          name: item.name,
-          category: item.category,
-          amount: item.amount,
-          currency: "CAD",
-          notes: null,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
-      const created = (await res.json()) as ApiEntry;
-      await db.delete(STORE, item.localId);
-
-      synced.push({
-        localId: item.localId,
-        created: apiToUi(created),
-      });
-    } catch {
-      await db.put(STORE, {
-        ...item,
-        status: "failed" as const,
-        retryCount: item.retryCount + 1,
-      });
+    if (opts?.onlyLocalIds?.length) {
+      const wanted = new Set(opts.onlyLocalIds);
+      queued = queued.filter((q) => wanted.has(q.localId));
     }
-  }
 
-  return synced;
+    const synced: Array<{
+      localId: string;
+      created: {
+        id: string;
+        type: "income" | "expense";
+        name: string;
+        category: string;
+        amount: number;
+        date: Date;
+      };
+    }> = [];
+
+    for (const item of queued) {
+      if (item.status === "sending") continue;
+
+      try {
+        await db.put(STORE, { ...item, status: "sending" as const });
+
+        const res = await fetch(`${API_BASE}/entries`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Client-Request-Id": item.localId,
+          },
+          body: JSON.stringify({
+            user_id: item.userId,
+            date: item.date,
+            type: item.type,
+            name: item.name,
+            category: item.category,
+            amount: item.amount,
+            currency: "CAD",
+            notes: null,
+            client_request_id: item.localId,
+          }),
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const created = (await res.json()) as ApiEntry;
+        await db.delete(STORE, item.localId);
+
+        synced.push({
+          localId: item.localId,
+          created: apiToUi(created),
+        });
+      } catch {
+        const latest = await db.get(STORE, item.localId);
+        if (latest) {
+          await db.put(STORE, {
+            ...latest,
+            status: "failed" as const,
+            retryCount: (latest.retryCount || 0) + 1,
+          });
+        }
+      }
+    }
+
+    return synced;
+  })();
+
+  try {
+    return await flushPromise;
+  } finally {
+    flushPromise = null;
+  }
 }
 
 export async function registerQuickEntrySync() {

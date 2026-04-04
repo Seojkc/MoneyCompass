@@ -20,8 +20,6 @@ import {
 } from "@/lib/bridge";
 import Analytics from "./Components/AnalyticsFolder/Analytics";
 
-
-
 import {
   enqueueQuickEntry,
   flushPendingQuickEntries,
@@ -30,7 +28,6 @@ import {
   registerQuickEntryServiceWorker,
   registerQuickEntrySync,
 } from "@/lib/quickEntryQueue";
-
 
 type Transaction = {
   type: "income" | "expense";
@@ -67,30 +64,42 @@ export default function Home() {
   const ticking = useRef(false);
   const navOffsetRef = useRef(0);
   const profileRef = useRef<HTMLDivElement | null>(null);
+  const flushTimeoutRef = useRef<number | null>(null);
 
   const NAV_HIDE_DISTANCE = 110;
+
+  const scheduleFlush = () => {
+    if (flushTimeoutRef.current) {
+      window.clearTimeout(flushTimeoutRef.current);
+    }
+
+    flushTimeoutRef.current = window.setTimeout(() => {
+      flushQuickEntriesAndRefresh();
+    }, 1500);
+  };
 
   useEffect(() => {
     registerQuickEntryServiceWorker();
 
     const onOnline = () => {
-      flushQuickEntriesAndRefresh();
+      scheduleFlush();
       registerQuickEntrySync();
     };
 
     window.addEventListener("online", onOnline);
 
     const interval = window.setInterval(() => {
-      flushQuickEntriesAndRefresh();
+      scheduleFlush();
     }, 20000);
 
     return () => {
       window.removeEventListener("online", onOnline);
       window.clearInterval(interval);
+      if (flushTimeoutRef.current) {
+        window.clearTimeout(flushTimeoutRef.current);
+      }
     };
   }, [currentUser?.id, selectedMonth]);
-
-
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -206,68 +215,62 @@ export default function Home() {
   };
 
   const addQuickEntry = async (
-      type: "income" | "expense",
-      category: string,
-      amount: number
-    ) => {
-      if (!currentUser?.id) {
-        router.replace("/login");
-        return;
-      }
+    type: "income" | "expense",
+    category: string,
+    amount: number
+  ) => {
+    if (!currentUser?.id) {
+      router.replace("/login");
+      return;
+    }
 
-      setTransactions((prev) => [...prev, { type, category, amount }]);
+    setTransactions((prev) => [...prev, { type, category, amount }]);
 
-      const today = new Date();
-      const isSameSelectedMonthAsToday =
-        selectedMonth.getFullYear() === today.getFullYear() &&
-        selectedMonth.getMonth() === today.getMonth();
+    const today = new Date();
+    const isSameSelectedMonthAsToday =
+      selectedMonth.getFullYear() === today.getFullYear() &&
+      selectedMonth.getMonth() === today.getMonth();
 
-      const quickDate = isSameSelectedMonthAsToday
-        ? new Date(today.getFullYear(), today.getMonth(), today.getDate())
-        : new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
+    const quickDate = isSameSelectedMonthAsToday
+      ? new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      : new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
 
-      const tempId = `pending-${makeId()}`;
+    const tempId = `pending-${makeId()}`;
 
-      const optimisticEntry: Entry = {
-        id: tempId,
-        type,
-        name: "QuickEntry",
-        category,
-        amount: Math.abs(amount),
-        date: quickDate,
-        pendingSync: true,
-      };
-
-      await enqueueQuickEntry({
-        localId: tempId,
-        userId: currentUser.id,
-        date: dateToYmd(quickDate),
-        type,
-        name: "QuickEntry",
-        category,
-        amount: Math.abs(amount),
-        createdAt: Date.now(),
-        status: "pending",
-        retryCount: 0,
-        apiBase: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
-      } as any);
-
-      setPendingEntries((prev) => [optimisticEntry, ...prev]);
-
-      try {
-        const synced = await flushPendingQuickEntries({ onlyLocalIds: [tempId] });
-
-        if (synced.length > 0) {
-          setPendingEntries((prev) => prev.filter((e) => e.id !== tempId));
-          await fetchEntriesForMonth(currentUser.id, selectedMonth);
-        } else {
-          await registerQuickEntrySync();
-        }
-      } catch (err) {
-        console.error("Quick entry queued for retry:", err);
-        await registerQuickEntrySync();
-      }
+    const optimisticEntry: Entry = {
+      id: tempId,
+      type,
+      name: "QuickEntry",
+      category,
+      amount: Math.abs(amount),
+      date: quickDate,
+      pendingSync: true,
     };
+
+    await enqueueQuickEntry({
+      localId: tempId,
+      userId: currentUser.id,
+      date: dateToYmd(quickDate),
+      type,
+      name: "QuickEntry",
+      category,
+      amount: Math.abs(amount),
+      createdAt: Date.now(),
+      status: "pending",
+      retryCount: 0,
+      apiBase: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+    } as any);
+
+    setPendingEntries((prev) => [optimisticEntry, ...prev]);
+
+    try {
+      scheduleFlush();
+      await registerQuickEntrySync();
+    } catch (err) {
+      console.error("Quick entry queued for retry:", err);
+      await registerQuickEntrySync();
+    }
+  };
 
   const deleteEntry = async (id: string) => {
     if (id.startsWith("pending-")) {
